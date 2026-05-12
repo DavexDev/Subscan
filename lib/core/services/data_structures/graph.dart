@@ -13,7 +13,7 @@ class Graph<T> {
     _adjacencyList.putIfAbsent(source, () => <T>{});
     _adjacencyList.putIfAbsent(dest, () => <T>{});
     _adjacencyList[source]!.add(dest);
-    
+
     if (!directed) {
       _adjacencyList[dest]!.add(source);
     }
@@ -22,7 +22,7 @@ class Graph<T> {
   /// BFS: Breadth-First Search
   List<T> bfs(T start) {
     if (!_adjacencyList.containsKey(start)) return [];
-    
+
     final visited = <T>{};
     final queue = <T>[start];
     final result = <T>[];
@@ -30,7 +30,7 @@ class Graph<T> {
     while (queue.isNotEmpty) {
       final node = queue.removeAt(0);
       if (visited.contains(node)) continue;
-      
+
       visited.add(node);
       result.add(node);
       queue.addAll(_adjacencyList[node] ?? []);
@@ -41,7 +41,7 @@ class Graph<T> {
   /// DFS: Depth-First Search
   List<T> dfs(T start) {
     if (!_adjacencyList.containsKey(start)) return [];
-    
+
     final visited = <T>{};
     final result = <T>[];
 
@@ -49,8 +49,11 @@ class Graph<T> {
       if (visited.contains(node)) return;
       visited.add(node);
       result.add(node);
-      for (final neighbor in _adjacencyList[node] ?? []) {
-        visit(neighbor);
+      final neighbors = _adjacencyList[node];
+      if (neighbors != null) {
+        for (final neighbor in neighbors) {
+          visit(neighbor);
+        }
       }
     }
 

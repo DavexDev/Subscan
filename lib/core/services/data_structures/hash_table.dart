@@ -4,7 +4,8 @@ class HashTable<K, V> {
   final List<List<MapEntry<K, V>>> _buckets;
   int _size = 0;
 
-  HashTable({int capacity = 16}) : _buckets = List.generate(capacity, (_) => []);
+  HashTable({int capacity = 16})
+    : _buckets = List.generate(capacity, (_) => []);
 
   /// Hash function
   int _hash(K key) => key.hashCode % _buckets.length;
@@ -12,7 +13,7 @@ class HashTable<K, V> {
   /// Insert: agregar o actualizar key-value
   void insert(K key, V value) {
     final index = _hash(key);
-    
+
     // Buscar si la key ya existe
     for (int i = 0; i < _buckets[index].length; i++) {
       if (_buckets[index][i].key == key) {
@@ -20,7 +21,7 @@ class HashTable<K, V> {
         return;
       }
     }
-    
+
     // Si no existe, agregarlo
     _buckets[index].add(MapEntry(key, value));
     _size++;
