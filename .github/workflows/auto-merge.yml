@@ -1,4 +1,4 @@
-name: Auto-merge PRs
+name: Validate & Auto-merge PRs
 
 on:
   pull_request:
@@ -10,10 +10,36 @@ on:
 permissions:
   pull-requests: write
   contents: write
+  checks: write
 
 jobs:
-  auto-merge:
+  validate:
     runs-on: ubuntu-latest
+    name: Validate Code
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 'latest'
+          channel: 'stable'
+
+      - name: Get dependencies
+        run: flutter pub get
+
+      - name: Run Flutter Analyze
+        id: analyze
+        run: |
+          flutter analyze
+          echo "ANALYZE_PASSED=true" >> $GITHUB_ENV
+
+  auto-merge:
+    needs: validate
+    runs-on: ubuntu-latest
+    if: success()
     
     steps:
       - name: Enable auto-merge for PR
@@ -28,3 +54,20 @@ jobs:
           MERGE_FORKS: false
           MERGE_RETRY_SLEEP: 30000
           MERGE_RETRY_ATTEMPTS: 5
+
+  comment-on-failure:
+    needs: validate
+    runs-on: ubuntu-latest
+    if: failure()
+    
+    steps:
+      - name: Comment PR with failure
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: '❌ **Validación fallida**\n\nEl código no pasó `flutter analyze`. Por favor revisa los errores y haz push nuevamente.'
+            })
