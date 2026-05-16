@@ -9,8 +9,8 @@ class BinaryTree<T> {
     : _comparator = comparator ?? _defaultComparator;
 
   static int _defaultComparator(dynamic a, dynamic b) {
-    if (a is Comparable && b is Comparable) {
-      return a.compareTo(b as Comparable);
+    if (a is Comparable<dynamic> && b is Comparable<dynamic>) {
+      return a.compareTo(b);
     }
     throw UnsupportedError('Type must implement Comparable');
   }
