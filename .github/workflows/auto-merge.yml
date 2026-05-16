@@ -27,7 +27,7 @@ jobs:
   auto-merge:
     needs: validate
     runs-on: ubuntu-latest
-    if: success() && github.base_ref != 'main'
+    if: success()
     
     steps:
       - name: Enable auto-merge
