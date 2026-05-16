@@ -1,0 +1,30 @@
+name: Auto-merge PRs
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches:
+      - main
+      - dave
+
+permissions:
+  pull-requests: write
+  contents: write
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Enable auto-merge for PR
+        uses: pascalgn/automerge-action@v0.15.6
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          MERGE_METHOD: squash
+          MERGE_COMMIT_MESSAGE: auto
+          UPDATE_METHOD: rebase
+          MERGE_LABELS: ""
+          MERGE_FILTER_AUTHOR: dependabot,bot
+          MERGE_FORKS: false
+          MERGE_RETRY_SLEEP: 30000
+          MERGE_RETRY_ATTEMPTS: 5
