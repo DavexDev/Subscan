@@ -33,7 +33,7 @@ class SubscriptionDataStructureService {
     final proximas = subscriptions
         .where((s) => s.isNearRenewal && !s.isUrgent)
         .toList();
-    final resto = subscriptions.where((s) => !s.isNearRenewal).toList();
+    // resto no se usa en v1, pero se reserva para futuras funcionalidades
 
     // STACK: Suscripciones urgentes (LIFO - últimas agregadas primero = más urgentes)
     for (final sub in urgentes) {
@@ -79,7 +79,6 @@ class SubscriptionDataStructureService {
     final serviciosPorCategoria = _groupByCategory(subscriptions);
 
     for (final entry in serviciosPorCategoria.entries) {
-      final categoria = entry.key;
       final servicios = entry.value;
       // Conectar servicios de la misma categoría
       for (int i = 0; i < servicios.length; i++) {

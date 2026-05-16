@@ -8,14 +8,16 @@ import 'package:subscan/core/services/subscription_service.dart';
 /// Persona 3 implementará: SupabaseDatasource, GmailDatasource
 final subscriptionDatasourceProvider = Provider<SubscriptionDatasource>((ref) {
   // TODO: Implementar datasource concreto (Firebase/Supabase)
-  throw UnimplementedError('SubscriptionDatasource debe ser implementado por Persona 3');
+  throw UnimplementedError(
+    'SubscriptionDatasource debe ser implementado por Persona 3',
+  );
 });
 
 /// Provider para el repositorio de suscripciones
 /// Inyecta el datasource y expone métodos CRUD
 final subscriptionRepositoryProvider = Provider<SubscriptionRepository>((ref) {
   final datasource = ref.watch(subscriptionDatasourceProvider);
-  return SubscriptionRepositoryImpl(datasource);
+  return SubscriptionRepositoryImpl(datasource: datasource);
 });
 
 /// Provider para el servicio de distribución de datos en estructuras
