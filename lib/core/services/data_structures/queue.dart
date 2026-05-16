@@ -1,7 +1,10 @@
 /// Queue data structure implementation (FIFO - First In First Out)
-/// Generic Queue<T> para cualquier tipo de dato
+/// Generic Queue for any type of data
 class Queue<T> {
   final List<T> _items = [];
+
+  /// Getter para acceder a los items
+  List<T> get items => List.from(_items);
 
   /// Enqueue: agregar al final
   void enqueue(T element) {

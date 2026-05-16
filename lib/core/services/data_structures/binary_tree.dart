@@ -1,8 +1,19 @@
 /// BinaryTree data structure implementation
 /// Operaciones: Insert, Delete, Traverse (InOrder, PreOrder, PostOrder)
-class BinaryTree<T extends Comparable<T>> {
+class BinaryTree<T> {
   TreeNode<T>? _root;
   int _size = 0;
+  final int Function(T a, T b) _comparator;
+
+  BinaryTree({int Function(T a, T b)? comparator})
+    : _comparator = comparator ?? _defaultComparator;
+
+  static int _defaultComparator(dynamic a, dynamic b) {
+    if (a is Comparable && b is Comparable) {
+      return a.compareTo(b as Comparable);
+    }
+    throw UnsupportedError('Type must implement Comparable');
+  }
 
   /// Insert: agregar elemento
   void insert(T value) {
@@ -10,12 +21,13 @@ class BinaryTree<T extends Comparable<T>> {
       _root = TreeNode(value);
       _size++;
     } else {
-      _insertRecursive(_root, value);
+      _insertRecursive(_root!, value);
     }
   }
 
   void _insertRecursive(TreeNode<T> node, T value) {
-    if (value.compareTo(node.value) < 0) {
+    final comparison = _comparator(value, node.value);
+    if (comparison < 0) {
       if (node.left == null) {
         node.left = TreeNode(value);
         _size++;
@@ -39,8 +51,9 @@ class BinaryTree<T extends Comparable<T>> {
 
   bool _searchRecursive(TreeNode<T>? node, T value) {
     if (node == null) return false;
-    if (node.value == value) return true;
-    if (value.compareTo(node.value) < 0) {
+    final comparison = _comparator(value, node.value);
+    if (comparison == 0) return true;
+    if (comparison < 0) {
       return _searchRecursive(node.left, value);
     } else {
       return _searchRecursive(node.right, value);
