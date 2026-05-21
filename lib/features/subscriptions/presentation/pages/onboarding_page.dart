@@ -10,19 +10,33 @@ class OnboardingPage extends StatefulWidget {
 }
 
 class _OnboardingPageState extends State<OnboardingPage> {
+  final PageController _pageController = PageController();
   int _currentPage = 0;
 
-  final List<String> _images = [
-    'assets/images/onboarding_1.png',
-    'assets/images/onboarding_2.png',
-    'assets/images/onboarding_3.png',
+  final List<Map<String, String>> _pages = [
+    {
+      'title': 'Demasiadas\nsuscripciones',
+      'subtitle': 'Controla todos tus pagos y evita gastos\ninnecesarios cada mes.',
+      'image': 'assets/images/onboarding_ill_1.png',
+    },
+    {
+      'title': 'Analizamos\ntus gastos',
+      'subtitle': 'PODA detecta renovaciones\nautomáticas y servicios que casi no utilizas.',
+      'image': 'assets/images/onboarding_ill_2.png',
+    },
+    {
+      'title': 'Poda*\nlo innecesario',
+      'subtitle': 'Ahorra dinero cancelando suscripciones que ya no aportan valor.',
+      'image': 'assets/images/onboarding_ill_3.png',
+    },
   ];
 
   void _goToNext() {
     if (_currentPage < 2) {
-      setState(() {
-        _currentPage++;
-      });
+      _pageController.nextPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
     } else {
       _goToLogin();
     }
@@ -30,9 +44,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   void _goBack() {
     if (_currentPage > 0) {
-      setState(() {
-        _currentPage--;
-      });
+      _pageController.previousPage(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+      );
     }
   }
 
@@ -53,70 +68,160 @@ class _OnboardingPageState extends State<OnboardingPage> {
       backgroundColor: const Color(0xFF080818),
       body: Stack(
         children: [
-          // Background images with cross-fade transition
-          SizedBox.expand(
-            child: AnimatedSwitcher(
-              duration: const Duration(milliseconds: 500),
-              transitionBuilder: (Widget child, Animation<double> animation) {
-                return FadeTransition(opacity: animation, child: child);
-              },
-              child: Image.asset(
-                _images[_currentPage],
-                key: ValueKey<int>(_currentPage),
-                fit: BoxFit.cover,
-                alignment: Alignment.topCenter,
-              ),
-            ),
-          ),
-
-          // Invisible touch areas for swiping
-          Positioned.fill(
-            child: GestureDetector(
-              onHorizontalDragEnd: (details) {
-                if (details.primaryVelocity! < -300) {
-                  _goToNext(); // Swipe left
-                } else if (details.primaryVelocity! > 300) {
-                  _goBack(); // Swipe right
-                }
-              },
-            ),
-          ),
-
-          // Back button invisible area (top left)
-          if (_currentPage > 0)
-            Positioned(
-              top: MediaQuery.of(context).padding.top + 10,
-              left: 10,
-              width: 60,
-              height: 60,
-              child: GestureDetector(
-                onTap: _goBack,
-                behavior: HitTestBehavior.opaque,
-              ),
-            ),
-
-          // Bottom buttons invisible areas
+          // Background Gradient and Teal Blob
           Positioned(
-            bottom: 30,
-            left: 20,
-            right: 20,
-            height: 80,
-            child: Row(
+            top: -150,
+            right: -150,
+            child: Container(
+              width: 400,
+              height: 400,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: const Color(0xFF00B4A0).withValues(alpha: 0.15),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF00B4A0).withValues(alpha: 0.2),
+                    blurRadius: 100,
+                    spreadRadius: 50,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          
+          SafeArea(
+            child: Column(
               children: [
-                // OMITIR tap area
+                // Top area: Back button (if applicable) and Illustration
                 Expanded(
-                  flex: 1,
-                  child: GestureDetector(
-                    onTap: _goToLogin,
-                    behavior: HitTestBehavior.opaque,
+                  flex: 5,
+                  child: Stack(
+                    children: [
+                      // Illustration
+                      Positioned.fill(
+                        child: PageView.builder(
+                          controller: _pageController,
+                          onPageChanged: (idx) => setState(() => _currentPage = idx),
+                          itemCount: _pages.length,
+                          itemBuilder: (context, index) {
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 40, left: 20, right: 20),
+                              child: Image.asset(
+                                _pages[index]['image']!,
+                                fit: BoxFit.contain,
+                                alignment: Alignment.bottomCenter,
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                      
+                      // Back button (visible on page 2 and 3)
+                      if (_currentPage > 0)
+                        Positioned(
+                          top: 10,
+                          left: 10,
+                          child: IconButton(
+                            icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+                            onPressed: _goBack,
+                          ),
+                        ),
+                    ],
                   ),
                 ),
-                // SIGUIENTE/VAMOS tap area
+                
+                // Bottom area: Texts and Buttons
                 Expanded(
-                  flex: 1,
-                  child: GestureDetector(
-                    onTap: _goToNext,
-                    behavior: HitTestBehavior.opaque,
+                  flex: 4,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 30),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 30),
+                        // Title
+                        Text(
+                          _pages[_currentPage]['title']!,
+                          style: const TextStyle(
+                            fontFamily: DesignTokens.fontFamily,
+                            fontSize: 36,
+                            fontWeight: FontWeight.w800,
+                            color: Colors.white,
+                            height: 1.1,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        // Subtitle
+                        Text(
+                          _pages[_currentPage]['subtitle']!,
+                          style: TextStyle(
+                            fontFamily: DesignTokens.fontFamily,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w500,
+                            color: const Color(0xFF909090),
+                            height: 1.3,
+                          ),
+                        ),
+                        const Spacer(),
+                        
+                        // Dots Indicator
+                        Row(
+                          children: List.generate(
+                            _pages.length,
+                            (index) => Container(
+                              margin: const EdgeInsets.only(right: 8),
+                              width: _currentPage == index ? 32 : 12,
+                              height: 6,
+                              decoration: BoxDecoration(
+                                color: _currentPage == index
+                                    ? Colors.white
+                                    : Colors.white.withValues(alpha: 0.3),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                          ),
+                        ),
+                        
+                        const SizedBox(height: 30),
+                        
+                        // Buttons
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            TextButton(
+                              onPressed: _goToLogin,
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                textStyle: const TextStyle(
+                                  fontFamily: DesignTokens.fontFamily,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              child: const Text('OMITIR'),
+                            ),
+                            ElevatedButton(
+                              onPressed: _goToNext,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF9243FF), // Figma purple
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 14),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                textStyle: const TextStyle(
+                                  fontFamily: DesignTokens.fontFamily,
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              child: Text(_currentPage == 2 ? 'VAMOS' : 'SIGUIENTE'),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 30),
+                      ],
+                    ),
                   ),
                 ),
               ],
