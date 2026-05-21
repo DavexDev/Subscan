@@ -68,7 +68,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       backgroundColor: const Color(0xFF080818),
       body: Stack(
         children: [
-          // Background Gradient and Teal Blob
+          // Fixed Background Gradient and Teal Blob
           Positioned(
             top: -150,
             right: -150,
@@ -94,23 +94,66 @@ class _OnboardingPageState extends State<OnboardingPage> {
               children: [
                 // Top area: Back button (if applicable) and Illustration
                 Expanded(
-                  flex: 5,
+                  flex: 1,
                   child: Stack(
                     children: [
-                      // Illustration
+                      // Smoothly animating Pages (Image + Text together)
                       Positioned.fill(
                         child: PageView.builder(
                           controller: _pageController,
                           onPageChanged: (idx) => setState(() => _currentPage = idx),
                           itemCount: _pages.length,
                           itemBuilder: (context, index) {
-                            return Padding(
-                              padding: const EdgeInsets.only(top: 40, left: 20, right: 20),
-                              child: Image.asset(
-                                _pages[index]['image']!,
-                                fit: BoxFit.contain,
-                                alignment: Alignment.bottomCenter,
-                              ),
+                            return Column(
+                              crossAxisAlignment: CrossAxisAlignment.stretch,
+                              children: [
+                                Expanded(
+                                  flex: 5,
+                                  child: Padding(
+                                    padding: const EdgeInsets.only(top: 40, left: 20, right: 20),
+                                    child: Image.asset(
+                                      _pages[index]['image']!,
+                                      fit: BoxFit.contain,
+                                      alignment: Alignment.bottomCenter,
+                                    ),
+                                  ),
+                                ),
+                                Expanded(
+                                  flex: 4,
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 30),
+                                    child: Column(
+                                      crossAxisAlignment: CrossAxisAlignment.start,
+                                      children: [
+                                        const SizedBox(height: 30),
+                                        // Title
+                                        Text(
+                                          _pages[index]['title']!,
+                                          style: const TextStyle(
+                                            fontFamily: DesignTokens.fontFamily,
+                                            fontSize: 36,
+                                            fontWeight: FontWeight.w800,
+                                            color: Colors.white,
+                                            height: 1.1,
+                                          ),
+                                        ),
+                                        const SizedBox(height: 16),
+                                        // Subtitle
+                                        Text(
+                                          _pages[index]['subtitle']!,
+                                          style: TextStyle(
+                                            fontFamily: DesignTokens.fontFamily,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w500,
+                                            color: const Color(0xFF909090),
+                                            height: 1.3,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
                             );
                           },
                         ),
@@ -130,77 +173,52 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   ),
                 ),
                 
-                // Bottom area: Texts and Buttons
-                Expanded(
-                  flex: 4,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 30),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 30),
-                        // Title
-                        Text(
-                          _pages[_currentPage]['title']!,
-                          style: const TextStyle(
-                            fontFamily: DesignTokens.fontFamily,
-                            fontSize: 36,
-                            fontWeight: FontWeight.w800,
-                            color: Colors.white,
-                            height: 1.1,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        // Subtitle
-                        Text(
-                          _pages[_currentPage]['subtitle']!,
-                          style: TextStyle(
-                            fontFamily: DesignTokens.fontFamily,
-                            fontSize: 18,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFF909090),
-                            height: 1.3,
-                          ),
-                        ),
-                        const Spacer(),
-                        
-                        // Dots Indicator
-                        Row(
-                          children: List.generate(
-                            _pages.length,
-                            (index) => Container(
-                              margin: const EdgeInsets.only(right: 8),
-                              width: _currentPage == index ? 32 : 12,
-                              height: 6,
-                              decoration: BoxDecoration(
-                                color: _currentPage == index
-                                    ? Colors.white
-                                    : Colors.white.withValues(alpha: 0.3),
-                                borderRadius: BorderRadius.circular(10),
-                              ),
+                // Bottom Fixed Area: Dots and Buttons
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                  child: Column(
+                    children: [
+                      // Dots Indicator
+                      Row(
+                        children: List.generate(
+                          _pages.length,
+                          (index) => AnimatedContainer(
+                            duration: const Duration(milliseconds: 300),
+                            margin: const EdgeInsets.only(right: 8),
+                            width: _currentPage == index ? 32 : 12,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: _currentPage == index
+                                  ? Colors.white
+                                  : Colors.white.withValues(alpha: 0.3),
+                              borderRadius: BorderRadius.circular(10),
                             ),
                           ),
                         ),
-                        
-                        const SizedBox(height: 30),
-                        
-                        // Buttons
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            TextButton(
-                              onPressed: _goToLogin,
-                              style: TextButton.styleFrom(
-                                foregroundColor: Colors.white,
-                                textStyle: const TextStyle(
-                                  fontFamily: DesignTokens.fontFamily,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                      ),
+                      
+                      const SizedBox(height: 30),
+                      
+                      // Buttons
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          TextButton(
+                            onPressed: _goToLogin,
+                            style: TextButton.styleFrom(
+                              foregroundColor: Colors.white,
+                              textStyle: const TextStyle(
+                                fontFamily: DesignTokens.fontFamily,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
                               ),
-                              child: const Text('OMITIR'),
                             ),
-                            ElevatedButton(
+                            child: const Text('OMITIR'),
+                          ),
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            child: ElevatedButton(
+                              key: ValueKey<int>(_currentPage),
                               onPressed: _goToNext,
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: const Color(0xFF9243FF), // Figma purple
@@ -217,11 +235,11 @@ class _OnboardingPageState extends State<OnboardingPage> {
                               ),
                               child: Text(_currentPage == 2 ? 'VAMOS' : 'SIGUIENTE'),
                             ),
-                          ],
-                        ),
-                        const SizedBox(height: 30),
-                      ],
-                    ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 30),
+                    ],
                   ),
                 ),
               ],
