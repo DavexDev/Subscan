@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
-import 'package:subscan/features/subscriptions/presentation/pages/login_page.dart';
+import 'package:subscan/features/subscriptions/presentation/pages/onboarding_page.dart';
 import 'package:subscan/core/theme/design_tokens.dart';
 
 class SplashPage extends StatefulWidget {
@@ -27,7 +27,7 @@ class _SplashPageState extends State<SplashPage> {
         
         _controller.addListener(_checkVideoEnd);
       }).catchError((_) {
-        // En caso de error al cargar el video, navega directamente al login
+        // En caso de error al cargar el video, navega directamente al onboarding
         _navigateToLogin();
       });
   }
@@ -47,7 +47,7 @@ class _SplashPageState extends State<SplashPage> {
     if (mounted) {
       Navigator.of(context).pushReplacement(
         PageRouteBuilder(
-          pageBuilder: (context, animation, secondaryAnimation) => const LoginPage(),
+          pageBuilder: (context, animation, secondaryAnimation) => const OnboardingPage(),
           transitionsBuilder: (_, anim, _, child) => FadeTransition(opacity: anim, child: child),
           transitionDuration: DesignTokens.animNormal,
         ),
@@ -65,7 +65,7 @@ class _SplashPageState extends State<SplashPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white, // Fondo del splash screen
+      backgroundColor: Colors.white,
       body: Center(
         child: _isVideoInitialized
             ? AspectRatio(

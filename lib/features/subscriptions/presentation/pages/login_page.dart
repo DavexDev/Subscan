@@ -9,67 +9,51 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage>
-    with TickerProviderStateMixin {
-  // Controlador principal de entrada
+class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
+  // Entry animation
   late AnimationController _entryController;
   late Animation<double> _fadeAnim;
-  late Animation<Offset> _logoSlideAnim;
-  late Animation<Offset> _cardSlideAnim;
+  late Animation<Offset> _slideAnim;
 
-  // Controlador del orbe flotante
-  late AnimationController _orbController;
-  late Animation<double> _orbAnim;
+  // Floating blob animation
+  late AnimationController _blobController;
+  late Animation<double> _blobAnim;
 
-  // Controlador de shimmer en el botón
-  late AnimationController _shimmerController;
-
+  // Form
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
   bool _loading = false;
 
   @override
   void initState() {
     super.initState();
 
-    // Animación de entrada
     _entryController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1000),
+      duration: const Duration(milliseconds: 900),
     );
 
     _fadeAnim = CurvedAnimation(
       parent: _entryController,
-      curve: const Interval(0.0, 0.6, curve: Curves.easeOut),
+      curve: const Interval(0.0, 0.65, curve: Curves.easeOut),
     );
 
-    _logoSlideAnim = Tween<Offset>(
-      begin: const Offset(0, -0.3),
+    _slideAnim = Tween<Offset>(
+      begin: const Offset(0, 0.3),
       end: Offset.zero,
     ).animate(CurvedAnimation(
       parent: _entryController,
-      curve: const Interval(0.0, 0.7, curve: Curves.easeOutCubic),
+      curve: const Interval(0.1, 1.0, curve: Curves.easeOutCubic),
     ));
 
-    _cardSlideAnim = Tween<Offset>(
-      begin: const Offset(0, 0.4),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _entryController,
-      curve: const Interval(0.2, 1.0, curve: Curves.easeOutCubic),
-    ));
-
-    // Orbe flotante
-    _orbController = AnimationController(
+    _blobController = AnimationController(
       vsync: this,
-      duration: const Duration(seconds: 4),
+      duration: const Duration(seconds: 6),
     )..repeat(reverse: true);
 
-    _orbAnim = CurvedAnimation(parent: _orbController, curve: Curves.easeInOut);
-
-    // Shimmer en el botón
-    _shimmerController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 2),
-    )..repeat();
+    _blobAnim =
+        CurvedAnimation(parent: _blobController, curve: Curves.easeInOut);
 
     _entryController.forward();
   }
@@ -77,8 +61,9 @@ class _LoginPageState extends State<LoginPage>
   @override
   void dispose() {
     _entryController.dispose();
-    _orbController.dispose();
-    _shimmerController.dispose();
+    _blobController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
   }
 
@@ -89,13 +74,10 @@ class _LoginPageState extends State<LoginPage>
     setState(() => _loading = false);
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            const DashboardPage(),
-        transitionsBuilder: (_, anim, _, child) => FadeTransition(
-          opacity: anim,
-          child: child,
-        ),
-        transitionDuration: const Duration(milliseconds: 500),
+        pageBuilder: (ctx, anim, secAnim) => const DashboardPage(),
+        transitionsBuilder: (ctx, anim, secAnim, child) =>
+            FadeTransition(opacity: anim, child: child),
+        transitionDuration: DesignTokens.animNormal,
       ),
     );
   }
@@ -105,94 +87,189 @@ class _LoginPageState extends State<LoginPage>
     final size = MediaQuery.of(context).size;
 
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Stack(
         children: [
-          // ── Fondo degradado oscuro ──────────────────────────────────────
+          // ── Dark background ───────────────────────────────────────────────
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
                 colors: [
-                  Color(0xFF0F0E1A), // casi negro
-                  Color(0xFF1A1040), // índigo muy oscuro
-                  Color(0xFF0D0D1F),
+                  Color(0xFF080818),
+                  Color(0xFF0D0B2A),
                 ],
-                stops: [0.0, 0.5, 1.0],
               ),
             ),
           ),
 
-          // ── Orbes de luz de fondo ──────────────────────────────────────
+          // ── Teal blob top-right ───────────────────────────────────────────
           AnimatedBuilder(
-            animation: _orbAnim,
-            builder: (_, child) {
-              final offset = _orbAnim.value * 30;
-              return Stack(
-                children: [
-                  // Orbe superior izquierdo
-                  Positioned(
-                    top: -80 + offset,
-                    left: -60,
-                    child: _Orb(
-                      size: size.width * 0.7,
-                      color: const Color(0xFF6366F1),
-                      opacity: 0.15,
-                    ),
-                  ),
-                  // Orbe inferior derecho
-                  Positioned(
-                    bottom: -100 - offset,
-                    right: -40,
-                    child: _Orb(
-                      size: size.width * 0.75,
-                      color: const Color(0xFF8B5CF6),
-                      opacity: 0.12,
-                    ),
-                  ),
-                  // Orbe central pequeño
-                  Positioned(
-                    top: size.height * 0.35 + offset * 0.5,
-                    left: size.width * 0.6,
-                    child: _Orb(
-                      size: 120,
-                      color: const Color(0xFF06B6D4),
-                      opacity: 0.08,
-                    ),
-                  ),
-                ],
+            animation: _blobAnim,
+            builder: (ctx, child) {
+              final scale = 1.0 + _blobAnim.value * 0.08;
+              return Positioned(
+                top: -size.width * 0.3 + _blobAnim.value * 15,
+                right: -size.width * 0.3,
+                child: Transform.scale(
+                  scale: scale,
+                  child: _Blob(size: size.width * 0.85),
+                ),
               );
             },
           ),
 
-          // ── Contenido principal ────────────────────────────────────────
+          // ── Main content ──────────────────────────────────────────────────
           SafeArea(
             child: FadeTransition(
               opacity: _fadeAnim,
-              child: Column(
-                children: [
-                  const Spacer(flex: 2),
+              child: SlideTransition(
+                position: _slideAnim,
+                child: SingleChildScrollView(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      const SizedBox(height: 24),
 
-                  // Logo + nombre
-                  SlideTransition(
-                    position: _logoSlideAnim,
-                    child: const _LogoSection(),
+                      // Floating app icons
+                      _FloatingIconsRow(blobAnim: _blobAnim),
+
+                      const SizedBox(height: 20),
+
+                      // Person illustration
+                      Container(
+                        width: 100,
+                        height: 100,
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF1A1A3E),
+                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.1),
+                            width: 1.5,
+                          ),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.blue.shade300.withValues(alpha: 0.2),
+                              blurRadius: 32,
+                              spreadRadius: 4,
+                            ),
+                          ],
+                        ),
+                        child: Icon(
+                          Icons.person_rounded,
+                          size: 60,
+                          color: Colors.blue.shade300,
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Title
+                      const Text(
+                        'Bienvenido a PODA',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: DesignTokens.fontFamily,
+                          fontSize: 28,
+                          fontWeight: DesignTokens.wBold,
+                          color: Colors.white,
+                          letterSpacing: -0.5,
+                        ),
+                      ),
+
+                      const SizedBox(height: 8),
+
+                      // Subtitle
+                      Text(
+                        'Controla tus suscripciones fácilmente.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontFamily: DesignTokens.fontFamily,
+                          fontSize: 15,
+                          fontWeight: DesignTokens.wMedium,
+                          color: Colors.white.withValues(alpha: 0.5),
+                        ),
+                      ),
+
+                      const SizedBox(height: 32),
+
+                      // Email field
+                      _DarkTextField(
+                        controller: _emailController,
+                        hint: 'Email...',
+                        prefixIcon: Icons.search_rounded,
+                        keyboardType: TextInputType.emailAddress,
+                      ),
+
+                      const SizedBox(height: 14),
+
+                      // Password field
+                      _DarkTextField(
+                        controller: _passwordController,
+                        hint: 'Contraseña...',
+                        prefixIcon: Icons.lock_outline_rounded,
+                        obscureText: _obscurePassword,
+                        suffixIcon: _obscurePassword
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                        onSuffixTap: () => setState(
+                            () => _obscurePassword = !_obscurePassword),
+                      ),
+
+                      const SizedBox(height: 10),
+
+                      // Forgot password
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: GestureDetector(
+                          onTap: () {},
+                          child: Text(
+                            '¿Olvidaste tu contraseña?',
+                            style: TextStyle(
+                              fontFamily: DesignTokens.fontFamily,
+                              fontSize: 12,
+                              color: Colors.white.withValues(alpha: 0.45),
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      const SizedBox(height: 22),
+
+                      // Iniciar Sesión button
+                      _SignInButton(
+                        loading: _loading,
+                        onTap: _handleSignIn,
+                      ),
+
+                      const SizedBox(height: 16),
+
+                      // Problems text
+                      Text(
+                        '¿Tienes problemas al iniciar sesión?',
+                        style: TextStyle(
+                          fontFamily: DesignTokens.fontFamily,
+                          fontSize: 12,
+                          color: Colors.white.withValues(alpha: 0.35),
+                        ),
+                      ),
+
+                      const SizedBox(height: 20),
+
+                      // Divider with "o"
+                      _OrDivider(),
+
+                      const SizedBox(height: 20),
+
+                      // Google button
+                      _GoogleButton(onTap: _handleSignIn),
+
+                      const SizedBox(height: 32),
+                    ],
                   ),
-
-                  const Spacer(flex: 3),
-
-                  // Card de inicio de sesión
-                  SlideTransition(
-                    position: _cardSlideAnim,
-                    child: _SignInCard(
-                      shimmerController: _shimmerController,
-                      loading: _loading,
-                      onSignIn: _handleSignIn,
-                    ),
-                  ),
-
-                  const SizedBox(height: DesignTokens.s32),
-                ],
+                ),
               ),
             ),
           ),
@@ -202,13 +279,11 @@ class _LoginPageState extends State<LoginPage>
   }
 }
 
-// ─── Orbe de luz ─────────────────────────────────────────────────────────────
+// ─── Teal blob ────────────────────────────────────────────────────────────────
 
-class _Orb extends StatelessWidget {
+class _Blob extends StatelessWidget {
   final double size;
-  final Color color;
-  final double opacity;
-  const _Orb({required this.size, required this.color, required this.opacity});
+  const _Blob({required this.size});
 
   @override
   Widget build(BuildContext context) {
@@ -219,378 +294,281 @@ class _Orb extends StatelessWidget {
         shape: BoxShape.circle,
         gradient: RadialGradient(
           colors: [
-            color.withValues(alpha: opacity),
-            color.withValues(alpha: 0),
+            const Color(0xFF00B4A0).withValues(alpha: 0.3),
+            const Color(0xFF00B4A0).withValues(alpha: 0.08),
+            Colors.transparent,
           ],
+          stops: const [0.0, 0.5, 1.0],
         ),
       ),
     );
   }
 }
 
-// ─── Logo ─────────────────────────────────────────────────────────────────────
+// ─── Floating icons row ───────────────────────────────────────────────────────
 
-class _LogoSection extends StatelessWidget {
-  const _LogoSection();
+class _FloatingIconsRow extends StatelessWidget {
+  final Animation<double> blobAnim;
+  const _FloatingIconsRow({required this.blobAnim});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // Ícono con glassmorphism
-        Container(
-          width: 96,
-          height: 96,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(DesignTokens.rXL),
-            gradient: const LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                Color(0xFF6366F1),
-                Color(0xFF8B5CF6),
-              ],
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0xFF6366F1).withValues(alpha: 0.5),
-                blurRadius: 32,
-                offset: const Offset(0, 8),
+    return AnimatedBuilder(
+      animation: blobAnim,
+      builder: (ctx, child) {
+        final v = blobAnim.value;
+        return SizedBox(
+          height: 68,
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              _MiniIcon(
+                icon: Icons.play_circle_filled_rounded,
+                color: const Color(0xFFFF0000),
+                offset: v * 6,
+              ),
+              const SizedBox(width: 12),
+              _MiniIcon(
+                icon: Icons.star_rounded,
+                color: const Color(0xFF00B3E3),
+                offset: -v * 8,
+              ),
+              const SizedBox(width: 12),
+              _MiniIcon(
+                icon: Icons.movie_rounded,
+                color: const Color(0xFFE50914),
+                offset: v * 5,
+              ),
+              const SizedBox(width: 12),
+              _MiniIcon(
+                icon: Icons.music_note_rounded,
+                color: const Color(0xFF1DB954),
+                offset: -v * 7,
+              ),
+              const SizedBox(width: 12),
+              _MiniIcon(
+                icon: Icons.hd_rounded,
+                color: const Color(0xFF0070F3),
+                offset: v * 9,
               ),
             ],
           ),
-          child: const Center(
-            child: Icon(
-              Icons.radar_rounded,
-              size: 52,
-              color: Colors.white,
+        );
+      },
+    );
+  }
+}
+
+class _MiniIcon extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final double offset;
+
+  const _MiniIcon({
+    required this.icon,
+    required this.color,
+    required this.offset,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Transform.translate(
+      offset: Offset(0, offset),
+      child: Container(
+        width: 48,
+        height: 48,
+        decoration: BoxDecoration(
+          color: const Color(0xFF1A1A3E),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: color.withValues(alpha: 0.3),
+            width: 1.2,
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: color.withValues(alpha: 0.2),
+              blurRadius: 12,
+              offset: const Offset(0, 3),
+            ),
+          ],
+        ),
+        child: Icon(icon, color: color, size: 24),
+      ),
+    );
+  }
+}
+
+// ─── Dark text field ──────────────────────────────────────────────────────────
+
+class _DarkTextField extends StatelessWidget {
+  final TextEditingController controller;
+  final String hint;
+  final IconData prefixIcon;
+  final bool obscureText;
+  final IconData? suffixIcon;
+  final VoidCallback? onSuffixTap;
+  final TextInputType keyboardType;
+
+  const _DarkTextField({
+    required this.controller,
+    required this.hint,
+    required this.prefixIcon,
+    this.obscureText = false,
+    this.suffixIcon,
+    this.onSuffixTap,
+    this.keyboardType = TextInputType.text,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 52,
+      decoration: BoxDecoration(
+        color: const Color(0xFF13132A),
+        borderRadius: BorderRadius.circular(DesignTokens.rM),
+        border: Border.all(
+          color: Colors.white.withValues(alpha: 0.1),
+        ),
+      ),
+      child: TextField(
+        controller: controller,
+        obscureText: obscureText,
+        keyboardType: keyboardType,
+        style: const TextStyle(
+          fontFamily: DesignTokens.fontFamily,
+          fontSize: 15,
+          color: Colors.white,
+        ),
+        decoration: InputDecoration(
+          hintText: hint,
+          hintStyle: TextStyle(
+            fontFamily: DesignTokens.fontFamily,
+            fontSize: 15,
+            color: Colors.white.withValues(alpha: 0.35),
+          ),
+          prefixIcon: Icon(
+            prefixIcon,
+            color: Colors.white.withValues(alpha: 0.35),
+            size: 20,
+          ),
+          suffixIcon: suffixIcon != null
+              ? GestureDetector(
+                  onTap: onSuffixTap,
+                  child: Icon(
+                    suffixIcon,
+                    color: Colors.white.withValues(alpha: 0.35),
+                    size: 20,
+                  ),
+                )
+              : null,
+          border: InputBorder.none,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Sign-in button ───────────────────────────────────────────────────────────
+
+class _SignInButton extends StatelessWidget {
+  final bool loading;
+  final VoidCallback onTap;
+
+  const _SignInButton({required this.loading, required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: loading ? null : onTap,
+      child: Container(
+        height: 54,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+            colors: [
+              Color(0xFF6366F1),
+              Color(0xFF4F46E5),
+            ],
+          ),
+          borderRadius: BorderRadius.circular(DesignTokens.rM),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFF6366F1).withValues(alpha: 0.4),
+              blurRadius: 20,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: Center(
+          child: loading
+              ? const SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : const Text(
+                  'Iniciar Sesión',
+                  style: TextStyle(
+                    fontFamily: DesignTokens.fontFamily,
+                    fontSize: 16,
+                    fontWeight: DesignTokens.wBold,
+                    color: Colors.white,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+        ),
+      ),
+    );
+  }
+}
+
+// ─── Divider with "o" ─────────────────────────────────────────────────────────
+
+class _OrDivider extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Divider(
+            color: Colors.white.withValues(alpha: 0.12),
+            thickness: 1,
+          ),
+        ),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 14),
+          child: Text(
+            'o',
+            style: TextStyle(
+              fontFamily: DesignTokens.fontFamily,
+              fontSize: 13,
+              color: Colors.white.withValues(alpha: 0.3),
             ),
           ),
         ),
-
-        const SizedBox(height: DesignTokens.s20),
-
-        // SubScan
-        const Text(
-          'SubScan',
-          style: TextStyle(
-            fontFamily: DesignTokens.fontFamily,
-            fontSize: 40,
-            fontWeight: DesignTokens.wExtraBold,
-            color: Colors.white,
-            letterSpacing: -1.0,
+        Expanded(
+          child: Divider(
+            color: Colors.white.withValues(alpha: 0.12),
+            thickness: 1,
           ),
-        ),
-
-        const SizedBox(height: DesignTokens.s8),
-
-        // Tagline
-        Text(
-          'Tus suscripciones, bajo control',
-          style: TextStyle(
-            fontFamily: DesignTokens.fontFamily,
-            fontSize: 15,
-            fontWeight: DesignTokens.wMedium,
-            color: Colors.white.withValues(alpha: 0.5),
-            letterSpacing: 0.2,
-          ),
-        ),
-
-        const SizedBox(height: DesignTokens.s24),
-
-        // Pills de features
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _FeaturePill(icon: Icons.notifications_active_outlined, label: 'Alertas'),
-            const SizedBox(width: DesignTokens.s8),
-            _FeaturePill(icon: Icons.email_outlined, label: 'Gmail'),
-            const SizedBox(width: DesignTokens.s8),
-            _FeaturePill(icon: Icons.bar_chart_rounded, label: 'Análisis'),
-          ],
         ),
       ],
     );
   }
 }
 
-class _FeaturePill extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  const _FeaturePill({required this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: DesignTokens.s12,
-        vertical: DesignTokens.s6,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.07),
-        borderRadius: BorderRadius.circular(DesignTokens.rFull),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 13, color: DesignTokens.primaryLight),
-          const SizedBox(width: DesignTokens.s4),
-          Text(
-            label,
-            style: const TextStyle(
-              fontFamily: DesignTokens.fontFamily,
-              fontSize: 12,
-              fontWeight: DesignTokens.wMedium,
-              color: Colors.white,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-// ─── Card de Sign In con glassmorphism ───────────────────────────────────────
-
-class _SignInCard extends StatelessWidget {
-  final AnimationController shimmerController;
-  final bool loading;
-  final VoidCallback onSignIn;
-
-  const _SignInCard({
-    required this.shimmerController,
-    required this.loading,
-    required this.onSignIn,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: DesignTokens.s24),
-      child: Container(
-        padding: const EdgeInsets.all(DesignTokens.s32),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(DesignTokens.rXL),
-          color: Colors.white.withValues(alpha: 0.06),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.1),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.3),
-              blurRadius: 40,
-              offset: const Offset(0, 16),
-            ),
-          ],
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Título
-            const Text(
-              'Bienvenido',
-              style: TextStyle(
-                fontFamily: DesignTokens.fontFamily,
-                fontSize: 26,
-                fontWeight: DesignTokens.wBold,
-                color: Colors.white,
-                letterSpacing: -0.5,
-              ),
-            ),
-            const SizedBox(height: DesignTokens.s6),
-            Text(
-              'Inicia sesión para ver y gestionar\ntus suscripciones',
-              style: TextStyle(
-                fontFamily: DesignTokens.fontFamily,
-                fontSize: 14,
-                color: Colors.white.withValues(alpha: 0.5),
-                height: 1.5,
-              ),
-            ),
-
-            const SizedBox(height: DesignTokens.s32),
-
-            // Botón Google
-            _GoogleButton(
-              shimmerController: shimmerController,
-              loading: loading,
-              onTap: onSignIn,
-            ),
-
-            const SizedBox(height: DesignTokens.s20),
-
-            // Divider
-            Row(
-              children: [
-                Expanded(
-                  child: Divider(
-                    color: Colors.white.withValues(alpha: 0.1),
-                    thickness: 1,
-                  ),
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: DesignTokens.s12,
-                  ),
-                  child: Text(
-                    'o continúa con',
-                    style: TextStyle(
-                      fontFamily: DesignTokens.fontFamily,
-                      fontSize: 12,
-                      color: Colors.white.withValues(alpha: 0.3),
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: Divider(
-                    color: Colors.white.withValues(alpha: 0.1),
-                    thickness: 1,
-                  ),
-                ),
-              ],
-            ),
-
-            const SizedBox(height: DesignTokens.s20),
-
-            // Botón email (demo)
-            _OutlineButton(
-              icon: Icons.email_outlined,
-              label: 'Correo electrónico',
-              onTap: onSignIn,
-            ),
-
-            const SizedBox(height: DesignTokens.s24),
-
-            // Disclaimer
-            Center(
-              child: Text(
-                'Al continuar aceptas los Términos de Servicio\ny la Política de Privacidad de SubScan',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontFamily: DesignTokens.fontFamily,
-                  fontSize: 11,
-                  color: Colors.white.withValues(alpha: 0.25),
-                  height: 1.6,
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-// ─── Botón Google con shimmer ─────────────────────────────────────────────────
+// ─── Google button ────────────────────────────────────────────────────────────
 
 class _GoogleButton extends StatelessWidget {
-  final AnimationController shimmerController;
-  final bool loading;
   final VoidCallback onTap;
-
-  const _GoogleButton({
-    required this.shimmerController,
-    required this.loading,
-    required this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: loading ? null : onTap,
-      child: AnimatedBuilder(
-        animation: shimmerController,
-        builder: (_, child) {
-          return Container(
-            height: 56,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(DesignTokens.rM),
-              gradient: LinearGradient(
-                begin: Alignment(
-                    -1.0 + shimmerController.value * 2.5, 0),
-                end: Alignment(
-                    0.0 + shimmerController.value * 2.5, 0),
-                colors: const [
-                  Color(0xFF6366F1),
-                  Color(0xFF8B5CF6),
-                  Color(0xFF6366F1),
-                ],
-              ),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF6366F1).withValues(alpha: 0.4),
-                  blurRadius: 20,
-                  offset: const Offset(0, 6),
-                ),
-              ],
-            ),
-            child: loading
-                ? const Center(
-                    child: SizedBox(
-                      width: 22,
-                      height: 22,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 2,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Colors.white),
-                      ),
-                    ),
-                  )
-                : Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Container(
-                        width: 28,
-                        height: 28,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius:
-                              BorderRadius.circular(DesignTokens.rXS),
-                        ),
-                        child: const Center(
-                          child: Text(
-                            'G',
-                            style: TextStyle(
-                              fontSize: 16,
-                              fontWeight: DesignTokens.wBold,
-                              color: Color(0xFF4285F4),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: DesignTokens.s12),
-                      const Text(
-                        'Continuar con Google',
-                        style: TextStyle(
-                          fontFamily: DesignTokens.fontFamily,
-                          fontSize: 16,
-                          fontWeight: DesignTokens.wSemibold,
-                          color: Colors.white,
-                          letterSpacing: 0.2,
-                        ),
-                      ),
-                    ],
-                  ),
-          );
-        },
-      ),
-    );
-  }
-}
-
-// ─── Botón outline ────────────────────────────────────────────────────────────
-
-class _OutlineButton extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final VoidCallback onTap;
-
-  const _OutlineButton({
-    required this.icon,
-    required this.label,
-    required this.onTap,
-  });
+  const _GoogleButton({required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -598,25 +576,48 @@ class _OutlineButton extends StatelessWidget {
       onTap: onTap,
       child: Container(
         height: 52,
+        width: double.infinity,
         decoration: BoxDecoration(
+          color: Colors.white,
           borderRadius: BorderRadius.circular(DesignTokens.rM),
-          color: Colors.white.withValues(alpha: 0.05),
-          border: Border.all(
-            color: Colors.white.withValues(alpha: 0.12),
-          ),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.15),
+              blurRadius: 12,
+              offset: const Offset(0, 4),
+            ),
+          ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(icon, size: 20, color: Colors.white.withValues(alpha: 0.6)),
-            const SizedBox(width: DesignTokens.s10),
-            Text(
-              label,
+            // G logo
+            Container(
+              width: 24,
+              height: 24,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(4),
+              ),
+              child: const Center(
+                child: Text(
+                  'G',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                    color: Color(0xFF4285F4),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Text(
+              'Google',
               style: TextStyle(
                 fontFamily: DesignTokens.fontFamily,
-                fontSize: 15,
-                fontWeight: DesignTokens.wMedium,
-                color: Colors.white.withValues(alpha: 0.7),
+                fontSize: 16,
+                fontWeight: DesignTokens.wSemibold,
+                color: Color(0xFF1F1F1F),
+                letterSpacing: 0.2,
               ),
             ),
           ],
