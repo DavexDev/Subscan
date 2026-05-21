@@ -10,15 +10,19 @@ class OnboardingPage extends StatefulWidget {
 }
 
 class _OnboardingPageState extends State<OnboardingPage> {
-  final PageController _pageController = PageController();
   int _currentPage = 0;
+
+  final List<String> _images = [
+    'assets/images/onboarding_1.png',
+    'assets/images/onboarding_2.png',
+    'assets/images/onboarding_3.png',
+  ];
 
   void _goToNext() {
     if (_currentPage < 2) {
-      _pageController.nextPage(
-        duration: DesignTokens.animNormal,
-        curve: Curves.easeInOutCubic,
-      );
+      setState(() {
+        _currentPage++;
+      });
     } else {
       _goToLogin();
     }
@@ -26,10 +30,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   void _goBack() {
     if (_currentPage > 0) {
-      _pageController.previousPage(
-        duration: DesignTokens.animNormal,
-        curve: Curves.easeInOutCubic,
-      );
+      setState(() {
+        _currentPage--;
+      });
     }
   }
 
@@ -50,15 +53,33 @@ class _OnboardingPageState extends State<OnboardingPage> {
       backgroundColor: const Color(0xFF080818),
       body: Stack(
         children: [
-          PageView(
-            controller: _pageController,
-            physics: const NeverScrollableScrollPhysics(),
-            onPageChanged: (i) => setState(() => _currentPage = i),
-            children: [
-              _buildPage('assets/images/onboarding_1.png'),
-              _buildPage('assets/images/onboarding_2.png'),
-              _buildPage('assets/images/onboarding_3.png'),
-            ],
+          // Background images with cross-fade transition
+          SizedBox.expand(
+            child: AnimatedSwitcher(
+              duration: const Duration(milliseconds: 500),
+              transitionBuilder: (Widget child, Animation<double> animation) {
+                return FadeTransition(opacity: animation, child: child);
+              },
+              child: Image.asset(
+                _images[_currentPage],
+                key: ValueKey<int>(_currentPage),
+                fit: BoxFit.cover,
+                alignment: Alignment.topCenter,
+              ),
+            ),
+          ),
+
+          // Invisible touch areas for swiping
+          Positioned.fill(
+            child: GestureDetector(
+              onHorizontalDragEnd: (details) {
+                if (details.primaryVelocity! < -300) {
+                  _goToNext(); // Swipe left
+                } else if (details.primaryVelocity! > 300) {
+                  _goBack(); // Swipe right
+                }
+              },
+            ),
           ),
 
           // Back button invisible area (top left)
@@ -102,16 +123,6 @@ class _OnboardingPageState extends State<OnboardingPage> {
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildPage(String assetPath) {
-    return SizedBox.expand(
-      child: Image.asset(
-        assetPath,
-        fit: BoxFit.cover,
-        alignment: Alignment.topCenter,
       ),
     );
   }
