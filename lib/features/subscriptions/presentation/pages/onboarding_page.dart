@@ -104,32 +104,33 @@ class _OnboardingPageState extends State<OnboardingPage>
           ),
 
           // ── Teal blob top-right ───────────────────────────────────────────
-          AnimatedBuilder(
-            animation: _blobAnim,
-            builder: (context, _) {
-              final scale = 1.0 + _blobAnim.value * 0.08;
-              return Positioned(
-                top: -size.width * 0.25 + _blobAnim.value * 20,
-                right: -size.width * 0.25,
-                child: Transform.scale(
-                  scale: scale,
-                  child: _TealBlob(size: size.width * 0.8),
-                ),
-              );
-            },
+          Positioned(
+            top: -size.width * 0.25,
+            right: -size.width * 0.25,
+            child: AnimatedBuilder(
+              animation: _blobAnim,
+              builder: (context, _) {
+                final scale = 1.0 + _blobAnim.value * 0.08;
+                return Transform.translate(
+                  offset: Offset(0, _blobAnim.value * 20),
+                  child: Transform.scale(
+                    scale: scale,
+                    child: _TealBlob(size: size.width * 0.8),
+                  ),
+                );
+              },
+            ),
           ),
 
           // ── Back button (pages 1 & 2) ─────────────────────────────────────
           if (_currentPage > 0)
-            SafeArea(
-              child: Positioned(
-                top: 16,
-                left: 16,
-                child: IconButton(
-                  onPressed: _goBack,
-                  icon: const Icon(Icons.arrow_back_ios_new_rounded,
-                      color: Colors.white, size: 22),
-                ),
+            Positioned(
+              top: MediaQuery.of(context).padding.top + 16,
+              left: 16,
+              child: IconButton(
+                onPressed: _goBack,
+                icon: const Icon(Icons.arrow_back_ios_new_rounded,
+                    color: Colors.white, size: 22),
               ),
             ),
 

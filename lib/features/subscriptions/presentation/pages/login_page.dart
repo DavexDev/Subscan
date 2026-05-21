@@ -105,19 +105,22 @@ class _LoginPageState extends State<LoginPage> with TickerProviderStateMixin {
           ),
 
           // ── Teal blob top-right ───────────────────────────────────────────
-          AnimatedBuilder(
-            animation: _blobAnim,
-            builder: (ctx, child) {
-              final scale = 1.0 + _blobAnim.value * 0.08;
-              return Positioned(
-                top: -size.width * 0.3 + _blobAnim.value * 15,
-                right: -size.width * 0.3,
-                child: Transform.scale(
-                  scale: scale,
-                  child: _Blob(size: size.width * 0.85),
-                ),
-              );
-            },
+          Positioned(
+            top: -size.width * 0.3,
+            right: -size.width * 0.3,
+            child: AnimatedBuilder(
+              animation: _blobAnim,
+              builder: (ctx, child) {
+                final scale = 1.0 + _blobAnim.value * 0.08;
+                return Transform.translate(
+                  offset: Offset(0, _blobAnim.value * 15),
+                  child: Transform.scale(
+                    scale: scale,
+                    child: _Blob(size: size.width * 0.85),
+                  ),
+                );
+              },
+            ),
           ),
 
           // ── Main content ──────────────────────────────────────────────────
