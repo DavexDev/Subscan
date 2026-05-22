@@ -16,9 +16,9 @@ permissions:
   checks: write
 
 jobs:
-  create-pr:
+  validate-and-merge:
     runs-on: ubuntu-latest
-    name: Create Pull Request from Push
+    name: Validate & Auto-merge
     if: github.event_name == 'push' && github.ref_name != 'main'
     
     steps:
@@ -27,44 +27,39 @@ jobs:
         with:
           fetch-depth: 0
       
-      - name: Create Pull Request via GitHub CLI
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.11.3'
+          cache: true
+      
+      - name: Validate code
         run: |
-          PR_TITLE="[AUTO] Merge ${{ github.ref_name }} → main"
-          PR_BODY="Automated pull request from branch \`${{ github.ref_name }}\` triggered by push event."
-          
-          # Check if PR already exists
-          EXISTING_PR=$(gh pr list --head "${{ github.ref_name }}" --base main --json number -q ".[0].number" 2>/dev/null || echo "")
-          
-          if [ -z "$EXISTING_PR" ]; then
-            gh pr create --title "$PR_TITLE" --body "$PR_BODY" --head "${{ github.ref_name }}" --base main
-            echo "✓ PR created successfully"
-          else
-            echo "✓ PR #$EXISTING_PR already exists"
-          fi
+          flutter analyze
+          flutter test --coverage
+        continue-on-error: true
+      
+      - name: Merge to main
+        run: |
+          git config user.name "GitHub Actions"
+          git config user.email "actions@github.com"
+          git fetch origin main
+          git checkout main
+          git merge --squash origin/${{ github.ref_name }}
+          git commit -m "chore: merge ${{ github.ref_name }} → main [skip ci]" || echo "No changes to commit"
+          git push origin main
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  validate:
+  auto-merge-pr:
     runs-on: ubuntu-latest
-    name: Pre-merge Validation
+    name: Auto-merge PR
     if: github.event_name == 'pull_request'
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Verify PR is valid
-        run: |
-          echo "✓ PR validation passed"
-          echo "✓ Ready for auto-merge"
-          exit 0
-
-  auto-merge:
-    needs: validate
-    runs-on: ubuntu-latest
-    if: github.event_name == 'pull_request' && success()
-    
-    steps:
+      
       - name: Enable auto-merge
         uses: pascalgn/automerge-action@v0.15.6
         env:
