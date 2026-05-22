@@ -1,6 +1,12 @@
 name: Validate & Auto-merge PRs
 
 on:
+  push:
+    branches:
+      - dave
+      - brandonnn
+      - supabase-integration
+      - Jeferson
   pull_request:
     types: [opened, synchronize]
 
@@ -10,9 +16,28 @@ permissions:
   checks: write
 
 jobs:
+  create-pr:
+    runs-on: ubuntu-latest
+    name: Create Pull Request from Push
+    if: github.event_name == 'push'
+    
+    steps:
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: Automated PR from ${{ github.ref_name }}
+          title: "[AUTO] Merge ${{ github.ref_name }} → main"
+          body: "Automated pull request from branch `${{ github.ref_name }}` triggered by push event."
+          branch: ${{ github.ref_name }}
+          base: main
+          delete-branch: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   validate:
     runs-on: ubuntu-latest
     name: Pre-merge Validation
+    if: github.event_name == 'pull_request'
     
     steps:
       - name: Checkout code
@@ -27,7 +52,7 @@ jobs:
   auto-merge:
     needs: validate
     runs-on: ubuntu-latest
-    if: success()
+    if: github.event_name == 'pull_request' && success()
     
     steps:
       - name: Enable auto-merge
