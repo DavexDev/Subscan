@@ -43,3 +43,10 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# Archivos privados del equipo
+REVISION_*.md
+PERSONA*.md
+AI_AGENT_INSTRUCTIONS.md
+CI_CD_SETUP.md
+GUIA_EQUIPO_SUBSCAN.md
