@@ -4,7 +4,86 @@
 
 SubScan es una aplicación Flutter para gestionar suscripciones digitales con análisis inteligente mediante 6 estructuras de datos académicas. Implementa **Clean Architecture** con capas de Domain, Data y Presentation, integrado con **Riverpod** para state management.
 
-**Estado del Proyecto**: Implementación en 3 fases con 3 personas
+**Estado del Proyecto**: Desarrollo colaborativo con equipo especializado
+
+---
+
+## 👥 Equipo y Estructura de Trabajo
+
+### Miembros del Equipo (4)
+
+| Rol | Responsable | Rama | Área |
+|-----|------------|------|------|
+| **Designer** | Pablo | - | Figma: Mockups, Design Tokens, Componentes |
+| **Backend Core** | Dave | `dave` | Data Structures, Domain Layer, Architecture |
+| **Backend Core (Supabase)** | Dave | `supabase-integration` | Firebase Auth, Supabase DB, SupabaseDatasource, Edge Functions |
+| **Frontend** | Brandon | `brandonnn` | UI Pages, Widgets, Riverpod State, Animations |
+| **Backend Integration** | Jeffrey | `gmail-integration` | Gmail API Integration, GmailDatasource, Email Parsing |
+
+### Ramas Principales
+
+```
+main (protegida)
+ ├─ dave                    [feat(core):, feat(datasource):]
+ ├─ brandonnn               [feat(ui):, style:, refactor(ui):]
+ ├─ supabase-integration    [feat(auth):, feat(db):, feat(datasource):]
+ └─ gmail-integration       [feat(gmail):, feat(email-sync):]
+```
+
+### Convenciones de Commits por Rama
+
+**Branch `dave` (Dave - Backend Core)**:
+- `feat(core): implement {feature}`
+- `feat(datasource): implement {interface}`
+- `feat(providers): add {provider}`
+- `test(core): add {tests}`
+
+**Branch `brandonnn` (Brandon - Frontend)**:
+- `feat(ui): implement {page/widget}`
+- `style: {styling changes}`
+- `refactor(ui): {component improvements}`
+- `test(widget): add {tests}`
+
+**Branch `supabase-integration` (Dave - Supabase Setup)**:
+- `feat(auth): implement firebase authentication`
+- `feat(db): create subscriptions table with RLS`
+- `feat(datasource): implement SupabaseDatasource`
+- `feat(edge-functions): add subscription sync logic`
+
+**Branch `gmail-integration` (Jeffrey - Gmail API)**:
+- `feat(gmail): integrate Gmail API client`
+- `feat(datasource): implement GmailDatasource`
+- `feat(email-sync): add email parsing and detection`
+
+### Auto-merge Workflow
+
+Todas las ramas tienen auto-merge habilitado:
+- Trigger: PR abierto en cualquier rama
+- Validación: `flutter analyze` + `flutter test`
+- Merge type: Squash merge
+- Target: `main`
+
+Para crear nueva rama:
+```bash
+git checkout main
+git pull origin main
+git checkout -b {branch-name}
+# Hacer cambios
+git commit -m "tipo(área): mensaje"
+git push origin {branch-name}
+# Crear PR en GitHub → auto-merge en ~30 segundos
+```
+
+---
+
+## 🔄 Ciclo de Desarrollo
+
+1. **Design** → Pablo crea mockups y design tokens en Figma
+2. **Backend Core** → Dave implementa estructuras y contratos (rama `dave`)
+3. **Frontend** → Brandon implementa UI basada en Figma (rama `brandonnn`)
+4. **Backend Supabase** → Dave implementa autenticación y BD (rama `supabase-integration`)
+5. **Backend Gmail** → Jeffrey implementa integración de emails (rama `gmail-integration`)
+6. **Integration** → Todo se mergeea a `main` automáticamente
 
 ---
 
@@ -258,7 +337,9 @@ static void loadSubscriptionsIntoStructures({
 - `domain/repositories/subscription_repository.dart` - Interfaz de contrato
 
 ### 3.2 Data Layer (Acceso a Datos)
-- `data/datasources/subscription_datasource.dart` - Interfaz para implementadores (Persona 3)
+- `data/datasources/subscription_datasource.dart` - Interfaz abstracta para implementadores
+- `data/datasources/supabase_datasource.dart` - Implementación Supabase (rama `supabase-integration`)
+- `data/datasources/gmail_datasource.dart` - Implementación Gmail (rama `gmail-integration`)
 - `data/repositories/subscription_repository_impl.dart` - Implementación que usa datasource
 
 ### 3.3 Models
@@ -295,9 +376,9 @@ flutter test test/data_structures_test.dart test/subscription_service_test.dart
 
 ---
 
-## 5. Entregables de Persona 1
+## 5. Estado de Implementación por Rama
 
-### Completados [OK]
+### ✅ Rama `dave` - Backend Core (Dave)
 - [OK] 6 Estructuras de datos con operaciones completas
 - [OK] 42 Unit tests (todos pasando)
 - [OK] Subscription entity con propiedades computadas
@@ -305,12 +386,29 @@ flutter test test/data_structures_test.dart test/subscription_service_test.dart
 - [OK] Clean Architecture (Domain + Data layers)
 - [OK] Repositorio y Datasource interfaces
 - [OK] Riverpod Providers (structures y subscription)
-- [OK] Git repository inicializado (davexdev)
-- [OK] Documentación de estructuras (este README)
+- [OK] Documentación completa
 
-### Ready for Phase 2
-- Persona 2 puede usar `subscriptionRepositoryProvider` para obtener datos en UI
-- Persona 3 implementará datasources concretos (Firebase, Supabase, Gmail)
+### ✅ Rama `brandonnn` - Frontend UI (Brandon)
+- [OK] 5 Pages: Splash, Onboarding, Login, Dashboard, Detail
+- [OK] Widgets reutilizables: Card, Banner
+- [OK] Design Tokens y AppTheme
+- [OK] Riverpod state management (SubscriptionNotifier)
+- [OK] Animaciones y transiciones
+- [OK] Mock datasource para desarrollo
+- [OK] 43 tests pasando (42 + widget test)
+
+### ⏳ Rama `supabase-integration` - Backend Supabase (Dave)
+- [ ] Firebase Auth setup
+- [ ] Supabase database + RLS
+- [ ] SupabaseDatasource implementation
+- [ ] Edge Functions
+- [ ] .env configuration
+
+### ⏳ Rama `gmail-integration` - Email Integration (Jeffrey)
+- [ ] Gmail API integration
+- [ ] GmailDatasource implementation
+- [ ] Email parsing y detection
+- [ ] OAuth2 configuration
 
 ---
 
@@ -329,7 +427,7 @@ dependencies:
 
 ---
 
-## 7. Cómo Usar (Para Persona 2 & 3)
+## 7. Cómo Usar (Para Todas las Ramas)
 
 ### Cargar datos en estructuras
 ```dart
@@ -395,9 +493,12 @@ flutter run
 ---
 
 **Estructura del Proyecto**:
-- **Rama `dave`**: Implementación completa de Persona 1 (Backend & Data Structures)
-- **Setup privado**: Ver archivos `PERSONA2_SETUP.md` y `PERSONA3_SETUP.md` (local only)
-- **Estado del Repo**: Fase 1 completada - Lista para integración Persona 2 & 3
+- **Rama `dave`** (Dave - Backend Core): Estructuras de datos, Domain layer
+- **Rama `brandonnn`** (Brandon - Frontend): UI pages, widgets, state management
+- **Rama `supabase-integration`** (Dave - Supabase): Firebase Auth, database setup
+- **Rama `gmail-integration`** (Jeffrey - Email): Gmail API integration
+- **Setup Guides**: Ver archivos privados `PERSONA3A_BACKEND.md`, `PERSONA3B_GMAIL.md`, `AI_AGENT_INSTRUCTIONS.md`
+- **Estado del Repo**: Ramas `dave` + `brandonnn` completas. `supabase-integration` + `gmail-integration` en desarrollo paralelo
 
 **Última actualización**: 2026-05-12
 
