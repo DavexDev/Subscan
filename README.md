@@ -18,7 +18,7 @@ SubScan es una aplicación Flutter para gestionar suscripciones digitales con an
 | **Backend Core** | Dave | `dave` | Data Structures, Domain Layer, Architecture |
 | **Backend Core (Supabase)** | Dave | `supabase-integration` | Firebase Auth, Supabase DB, SupabaseDatasource, Edge Functions |
 | **Frontend** | Brandon | `brandonnn` | UI Pages, Widgets, Riverpod State, Animations |
-| **Backend Integration** | Jeffrey | `gmail-integration` | Gmail API Integration, GmailDatasource, Email Parsing |
+| **Backend Integration** | Jeferson | `Jeferson` | Gmail API Integration, GmailDatasource, Email Parsing |
 
 ### Ramas Principales
 
@@ -27,7 +27,7 @@ main (protegida)
  ├─ dave                    [feat(core):, feat(datasource):]
  ├─ brandonnn               [feat(ui):, style:, refactor(ui):]
  ├─ supabase-integration    [feat(auth):, feat(db):, feat(datasource):]
- └─ gmail-integration       [feat(gmail):, feat(email-sync):]
+ └─ Jeferson               [feat(gmail):, feat(email-sync):]
 ```
 
 ### Convenciones de Commits por Rama
@@ -50,7 +50,7 @@ main (protegida)
 - `feat(datasource): implement SupabaseDatasource`
 - `feat(edge-functions): add subscription sync logic`
 
-**Branch `gmail-integration` (Jeffrey - Gmail API)**:
+**Branch `Jeferson` (Jeferson - Gmail API)**:
 - `feat(gmail): integrate Gmail API client`
 - `feat(datasource): implement GmailDatasource`
 - `feat(email-sync): add email parsing and detection`
@@ -82,7 +82,7 @@ git push origin {branch-name}
 2. **Backend Core** → Dave implementa estructuras y contratos (rama `dave`)
 3. **Frontend** → Brandon implementa UI basada en Figma (rama `brandonnn`)
 4. **Backend Supabase** → Dave implementa autenticación y BD (rama `supabase-integration`)
-5. **Backend Gmail** → Jeffrey implementa integración de emails (rama `gmail-integration`)
+5. **Backend Gmail** → Jeferson implementa integración de emails (rama `Jeferson`)
 6. **Integration** → Todo se mergeea a `main` automáticamente
 
 ---
@@ -404,7 +404,7 @@ flutter test test/data_structures_test.dart test/subscription_service_test.dart
 - [ ] Edge Functions
 - [ ] .env configuration
 
-### ⏳ Rama `gmail-integration` - Email Integration (Jeffrey)
+### ⏳ Rama `Jeferson` - Email Integration (Jeferson)
 - [ ] Gmail API integration
 - [ ] GmailDatasource implementation
 - [ ] Email parsing y detection
@@ -496,7 +496,7 @@ flutter run
 - **Rama `dave`** (Dave - Backend Core): Estructuras de datos, Domain layer
 - **Rama `brandonnn`** (Brandon - Frontend): UI pages, widgets, state management
 - **Rama `supabase-integration`** (Dave - Supabase): Firebase Auth, database setup
-- **Rama `gmail-integration`** (Jeffrey - Email): Gmail API integration
+- **Rama `Jeferson`** (Jeferson - Email): Gmail API integration
 - **Setup Guides**: Ver archivos privados `PERSONA3A_BACKEND.md`, `PERSONA3B_GMAIL.md`, `AI_AGENT_INSTRUCTIONS.md`
 - **Estado del Repo**: Ramas `dave` + `brandonnn` completas. `supabase-integration` + `gmail-integration` en desarrollo paralelo
 
