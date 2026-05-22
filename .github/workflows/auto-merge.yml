@@ -1,4 +1,4 @@
-name: Validate & Auto-merge PRs
+name: Auto-merge PRs
 
 on:
   push:
@@ -9,6 +9,8 @@ on:
       - Jeferson
   pull_request:
     types: [opened, synchronize]
+    branches:
+      - main
 
 permissions:
   pull-requests: write
@@ -45,10 +47,7 @@ jobs:
     if: github.event_name == 'pull_request'
     
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Enable auto-merge
+      - name: Enable auto-merge for PR
         uses: pascalgn/automerge-action@v0.15.6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -57,3 +56,5 @@ jobs:
           UPDATE_METHOD: rebase
           MERGE_LABELS: ""
           MERGE_FORKS: false
+          MERGE_RETRY_SLEEP: 30000
+          MERGE_RETRY_ATTEMPTS: 5
