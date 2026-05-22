@@ -25,16 +25,22 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
+          fetch-depth: 0
       
-      - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
-        with:
-          commit-message: Automated PR from ${{ github.ref_name }}
-          title: "[AUTO] Merge ${{ github.ref_name }} → main"
-          body: "Automated pull request from branch `${{ github.ref_name }}` triggered by push event."
-          base: main
-          delete-branch: false
+      - name: Create Pull Request via GitHub CLI
+        run: |
+          PR_TITLE="[AUTO] Merge ${{ github.ref_name }} → main"
+          PR_BODY="Automated pull request from branch \`${{ github.ref_name }}\` triggered by push event."
+          
+          # Check if PR already exists
+          EXISTING_PR=$(gh pr list --head "${{ github.ref_name }}" --base main --json number -q ".[0].number" 2>/dev/null || echo "")
+          
+          if [ -z "$EXISTING_PR" ]; then
+            gh pr create --title "$PR_TITLE" --body "$PR_BODY" --head "${{ github.ref_name }}" --base main
+            echo "✓ PR created successfully"
+          else
+            echo "✓ PR #$EXISTING_PR already exists"
+          fi
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
