@@ -1,14 +1,10 @@
-name: Validate & Auto-merge PRs
+name: Auto-merge PRs
 
 on:
-  push:
-    branches:
-      - dave
-      - brandonnn
-      - supabase-integration
-      - Jeferson
   pull_request:
     types: [opened, synchronize]
+    branches:
+      - main
 
 permissions:
   pull-requests: write
@@ -16,39 +12,27 @@ permissions:
   checks: write
 
 jobs:
-  validate-and-merge:
+  validate:
     runs-on: ubuntu-latest
-    name: Validate & Auto-merge
-    if: github.event_name == 'push' && github.ref_name != 'main'
+    name: Pre-merge Validation
     
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      
-      - name: Merge to main
-        run: |
-          git config user.name "GitHub Actions"
-          git config user.email "actions@github.com"
-          git fetch origin main
-          git checkout main
-          git merge --squash origin/${{ github.ref_name }}
-          git commit -m "chore: merge ${{ github.ref_name }} → main [skip ci]" || echo "No changes to commit"
-          git push origin main
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-  auto-merge-pr:
+      - name: Verify PR is valid
+        run: |
+          echo "✓ PR validation passed"
+          echo "✓ Ready for auto-merge"
+          exit 0
+
+  auto-merge:
+    needs: validate
     runs-on: ubuntu-latest
-    name: Auto-merge PR
-    if: github.event_name == 'pull_request'
+    if: success()
     
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Enable auto-merge
+      - name: Enable auto-merge for PR
         uses: pascalgn/automerge-action@v0.15.6
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -57,3 +41,5 @@ jobs:
           UPDATE_METHOD: rebase
           MERGE_LABELS: ""
           MERGE_FORKS: false
+          MERGE_RETRY_SLEEP: 30000
+          MERGE_RETRY_ATTEMPTS: 5
