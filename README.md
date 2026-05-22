@@ -8,7 +8,7 @@ SubScan es una aplicación Flutter para gestionar suscripciones digitales con an
 
 ---
 
-## 👥 Equipo y Estructura de Trabajo
+## Equipo y Estructura de Trabajo
 
 ### Miembros del Equipo (4)
 
@@ -76,7 +76,7 @@ git push origin {branch-name}
 
 ---
 
-## 🔄 Ciclo de Desarrollo
+## Ciclo de Desarrollo
 
 1. **Design** → Pablo crea mockups y design tokens en Figma
 2. **Backend Core** → Dave implementa estructuras y contratos (rama `dave`)
