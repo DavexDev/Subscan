@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:subscan/core/theme/design_tokens.dart';
+import 'package:subscan/features/auth/auth_provider.dart';
 import 'package:subscan/features/subscriptions/presentation/pages/dashboard_page.dart';
 
 /// Pantalla de inicio / login de SubScan.
-/// El flujo OAuth real se conecta aquí cuando esté disponible.
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage>
+class _LoginPageState extends ConsumerState<LoginPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
@@ -25,18 +26,12 @@ class _LoginPageState extends State<LoginPage>
       duration: const Duration(milliseconds: 900),
     );
 
-    _fadeAnim = CurvedAnimation(
-      parent: _animController,
-      curve: Curves.easeOut,
-    );
+    _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
 
-    _slideAnim = Tween<Offset>(
-      begin: const Offset(0, 0.12),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animController,
-      curve: Curves.easeOutCubic,
-    ));
+    _slideAnim = Tween<Offset>(begin: const Offset(0, 0.12), end: Offset.zero)
+        .animate(
+          CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
+        );
 
     _animController.forward();
   }
@@ -112,11 +107,7 @@ class _Logo extends StatelessWidget {
             ),
           ),
           child: const Center(
-            child: Icon(
-              Icons.radar_rounded,
-              size: 48,
-              color: Colors.white,
-            ),
+            child: Icon(Icons.radar_rounded, size: 48, color: Colors.white),
           ),
         ),
         const SizedBox(height: DesignTokens.s20),
@@ -155,7 +146,10 @@ class _Headline extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _FeaturePill(icon: Icons.notifications_active_outlined, label: 'Alertas'),
+            _FeaturePill(
+              icon: Icons.notifications_active_outlined,
+              label: 'Alertas',
+            ),
             const SizedBox(width: DesignTokens.s8),
             _FeaturePill(icon: Icons.email_outlined, label: 'Gmail'),
             const SizedBox(width: DesignTokens.s8),
@@ -204,24 +198,34 @@ class _FeaturePill extends StatelessWidget {
   }
 }
 
-class _GoogleSignInButton extends StatefulWidget {
+class _GoogleSignInButton extends ConsumerStatefulWidget {
   final VoidCallback onTap;
   const _GoogleSignInButton({required this.onTap});
 
   @override
-  State<_GoogleSignInButton> createState() => _GoogleSignInButtonState();
+  ConsumerState<_GoogleSignInButton> createState() =>
+      _GoogleSignInButtonState();
 }
 
-class _GoogleSignInButtonState extends State<_GoogleSignInButton> {
+class _GoogleSignInButtonState extends ConsumerState<_GoogleSignInButton> {
   bool _loading = false;
 
   Future<void> _handleTap() async {
     setState(() => _loading = true);
-    // Simula delay de OAuth
-    await Future.delayed(const Duration(milliseconds: 800));
-    if (mounted) {
-      setState(() => _loading = false);
-      widget.onTap();
+    try {
+      final authService = ref.read(authServiceProvider);
+      await authService.signInWithGoogle();
+      if (mounted) {
+        setState(() => _loading = false);
+        widget.onTap();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _loading = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error al iniciar sesión: $e')));
+      }
     }
   }
 
@@ -294,7 +298,9 @@ class _GoogleLogoPainter extends CustomPainter {
     canvas.drawCircle(center, r, Paint()..color = const Color(0xFFEEEEEE));
 
     // Letras G en colores de Google
-    final paint = Paint()..style = PaintingStyle.stroke..strokeWidth = 2.5;
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5;
 
     paint.color = const Color(0xFF4285F4); // Azul
     canvas.drawArc(

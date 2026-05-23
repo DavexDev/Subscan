@@ -44,13 +44,13 @@ app.*.map.json
 /android/app/profile
 /android/app/release
 
-# Private docs
+# Archivos privados del equipo
 REVISION_*.md
 PERSONA*.md
 AI_AGENT_INSTRUCTIONS.md
 CI_CD_SETUP.md
 GUIA_EQUIPO_SUBSCAN.md
 
-# Firebase config
+# Firebase config (contains API keys)
 android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
