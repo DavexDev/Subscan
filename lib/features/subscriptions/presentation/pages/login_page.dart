@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:subscan/core/theme/design_tokens.dart';
+import 'package:subscan/features/auth/auth_provider.dart';
 import 'package:subscan/features/subscriptions/presentation/pages/dashboard_page.dart';
 
 /// Pantalla de inicio / login de SubScan.
-/// El flujo OAuth real se conecta aquí cuando esté disponible.
-class LoginPage extends StatefulWidget {
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage>
+class _LoginPageState extends ConsumerState<LoginPage>
     with SingleTickerProviderStateMixin {
   late AnimationController _animController;
   late Animation<double> _fadeAnim;
@@ -204,24 +205,33 @@ class _FeaturePill extends StatelessWidget {
   }
 }
 
-class _GoogleSignInButton extends StatefulWidget {
+class _GoogleSignInButton extends ConsumerStatefulWidget {
   final VoidCallback onTap;
   const _GoogleSignInButton({required this.onTap});
 
   @override
-  State<_GoogleSignInButton> createState() => _GoogleSignInButtonState();
+  ConsumerState<_GoogleSignInButton> createState() => _GoogleSignInButtonState();
 }
 
-class _GoogleSignInButtonState extends State<_GoogleSignInButton> {
+class _GoogleSignInButtonState extends ConsumerState<_GoogleSignInButton> {
   bool _loading = false;
 
   Future<void> _handleTap() async {
     setState(() => _loading = true);
-    // Simula delay de OAuth
-    await Future.delayed(const Duration(milliseconds: 800));
-    if (mounted) {
-      setState(() => _loading = false);
-      widget.onTap();
+    try {
+      final authService = ref.read(authServiceProvider);
+      await authService.signInWithGoogle();
+      if (mounted) {
+        setState(() => _loading = false);
+        widget.onTap();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _loading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Error al iniciar sesión: $e')),
+        );
+      }
     }
   }
 
