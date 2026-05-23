@@ -1,37 +1,34 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AuthService {
-  final SupabaseClient _supabase = Supabase.instance.client;
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   final GoogleSignIn _googleSignIn = GoogleSignIn();
 
-  User? get currentUser => _supabase.auth.currentUser;
+  User? get currentUser => _auth.currentUser;
   bool get isSignedIn => currentUser != null;
 
-  Stream<AuthState> get authStateChanges => _supabase.auth.onAuthStateChange;
+  Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-  /// Inicia sesión con Google usando Supabase OAuth.
-  Future<void> signInWithGoogle() async {
+  /// Inicia sesión con Google usando Firebase Auth.
+  Future<UserCredential> signInWithGoogle() async {
     final googleUser = await _googleSignIn.signIn();
     if (googleUser == null) throw Exception('Google sign-in cancelled');
 
     final googleAuth = await googleUser.authentication;
-    final idToken = googleAuth.idToken;
-    final accessToken = googleAuth.accessToken;
 
-    if (idToken == null) throw Exception('No se obtuvo idToken de Google');
-
-    await _supabase.auth.signInWithIdToken(
-      provider: OAuthProvider.google,
-      idToken: idToken,
-      accessToken: accessToken,
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth.accessToken,
+      idToken: googleAuth.idToken,
     );
+
+    return await _auth.signInWithCredential(credential);
   }
 
-  /// Cierra sesión en Supabase y Google.
+  /// Cierra sesión en Firebase y Google.
   Future<void> signOut() async {
     await Future.wait([
-      _supabase.auth.signOut(),
+      _auth.signOut(),
       _googleSignIn.signOut(),
     ]);
   }
