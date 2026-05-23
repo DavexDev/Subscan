@@ -26,18 +26,12 @@ class _LoginPageState extends ConsumerState<LoginPage>
       duration: const Duration(milliseconds: 900),
     );
 
-    _fadeAnim = CurvedAnimation(
-      parent: _animController,
-      curve: Curves.easeOut,
-    );
+    _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
 
-    _slideAnim = Tween<Offset>(
-      begin: const Offset(0, 0.12),
-      end: Offset.zero,
-    ).animate(CurvedAnimation(
-      parent: _animController,
-      curve: Curves.easeOutCubic,
-    ));
+    _slideAnim = Tween<Offset>(begin: const Offset(0, 0.12), end: Offset.zero)
+        .animate(
+          CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
+        );
 
     _animController.forward();
   }
@@ -113,11 +107,7 @@ class _Logo extends StatelessWidget {
             ),
           ),
           child: const Center(
-            child: Icon(
-              Icons.radar_rounded,
-              size: 48,
-              color: Colors.white,
-            ),
+            child: Icon(Icons.radar_rounded, size: 48, color: Colors.white),
           ),
         ),
         const SizedBox(height: DesignTokens.s20),
@@ -156,7 +146,10 @@ class _Headline extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            _FeaturePill(icon: Icons.notifications_active_outlined, label: 'Alertas'),
+            _FeaturePill(
+              icon: Icons.notifications_active_outlined,
+              label: 'Alertas',
+            ),
             const SizedBox(width: DesignTokens.s8),
             _FeaturePill(icon: Icons.email_outlined, label: 'Gmail'),
             const SizedBox(width: DesignTokens.s8),
@@ -210,7 +203,8 @@ class _GoogleSignInButton extends ConsumerStatefulWidget {
   const _GoogleSignInButton({required this.onTap});
 
   @override
-  ConsumerState<_GoogleSignInButton> createState() => _GoogleSignInButtonState();
+  ConsumerState<_GoogleSignInButton> createState() =>
+      _GoogleSignInButtonState();
 }
 
 class _GoogleSignInButtonState extends ConsumerState<_GoogleSignInButton> {
@@ -228,9 +222,9 @@ class _GoogleSignInButtonState extends ConsumerState<_GoogleSignInButton> {
     } catch (e) {
       if (mounted) {
         setState(() => _loading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error al iniciar sesión: $e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error al iniciar sesión: $e')));
       }
     }
   }
@@ -304,7 +298,9 @@ class _GoogleLogoPainter extends CustomPainter {
     canvas.drawCircle(center, r, Paint()..color = const Color(0xFFEEEEEE));
 
     // Letras G en colores de Google
-    final paint = Paint()..style = PaintingStyle.stroke..strokeWidth = 2.5;
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5;
 
     paint.color = const Color(0xFF4285F4); // Azul
     canvas.drawArc(

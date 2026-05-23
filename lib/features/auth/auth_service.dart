@@ -27,9 +27,6 @@ class AuthService {
 
   /// Cierra sesión en Firebase y Google.
   Future<void> signOut() async {
-    await Future.wait([
-      _auth.signOut(),
-      _googleSignIn.signOut(),
-    ]);
+    await Future.wait([_auth.signOut(), _googleSignIn.signOut()]);
   }
 }
