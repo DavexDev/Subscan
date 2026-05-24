@@ -2,12 +2,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:subscan/features/subscriptions/domain/repositories/subscription_repository.dart';
 import 'package:subscan/features/subscriptions/data/repositories/subscription_repository_impl.dart';
 import 'package:subscan/features/subscriptions/data/datasources/subscription_datasource.dart';
-import 'package:subscan/features/subscriptions/data/datasources/mock_datasource.dart';
+import 'package:subscan/features/subscriptions/data/datasources/supabase_datasource.dart';
 import 'package:subscan/core/services/subscription_service.dart';
 
-/// Datasource activo. Cambiar a SupabaseDatasource cuando esté disponible.
+/// Datasource activo — Supabase.
 final subscriptionDatasourceProvider = Provider<SubscriptionDatasource>((ref) {
-  return MockSubscriptionDatasource();
+  return SupabaseSubscriptionDatasource();
 });
 
 /// Repositorio que expone los métodos CRUD inyectando el datasource.

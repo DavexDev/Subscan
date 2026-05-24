@@ -8,7 +8,7 @@ void main() {
     await tester.pumpWidget(
       const ProviderScope(child: SubScanApp()),
     );
-    // Verifica que la pantalla de splash está visible
-    expect(find.byType(SplashPage), findsOneWidget);
+    // Verifica que la pantalla de login está visible
+    expect(find.text('SubScan'), findsAtLeastNWidgets(1));
   });
 }

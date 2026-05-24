@@ -1,31 +1,53 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:subscan/core/theme/design_tokens.dart';
+import 'package:subscan/features/auth/auth_provider.dart';
 import 'package:subscan/features/subscriptions/presentation/pages/dashboard_page.dart';
 
-class LoginPage extends StatefulWidget {
+/// Pantalla de inicio / login de SubScan.
+class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  bool _obscurePassword = true;
+class _LoginPageState extends ConsumerState<LoginPage>
+    with SingleTickerProviderStateMixin {
+  late AnimationController _animController;
+  late Animation<double> _fadeAnim;
+  late Animation<Offset> _slideAnim;
+
+  @override
+  void initState() {
+    super.initState();
+    _animController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+
+    _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
+
+    _slideAnim = Tween<Offset>(begin: const Offset(0, 0.12), end: Offset.zero)
+        .animate(
+          CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
+        );
+
+    _animController.forward();
+  }
 
   @override
   void dispose() {
-    _emailController.dispose();
-    _passwordController.dispose();
+    _animController.dispose();
     super.dispose();
   }
 
-  void _handleSignIn() {
+  void _navigateToDashboard() {
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        pageBuilder: (ctx, anim, secAnim) => const DashboardPage(),
-        transitionsBuilder: (ctx, anim, secAnim, child) =>
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            const DashboardPage(),
+        transitionsBuilder: (_, anim, _, child) =>
             FadeTransition(opacity: anim, child: child),
         transitionDuration: DesignTokens.animNormal,
       ),
@@ -35,235 +57,139 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF080818),
-      body: Stack(
-        children: [
-          // Background Teal Blob
-          Positioned(
-            top: -150,
-            left: -100,
-            child: Container(
-              width: 400,
-              height: 400,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFF00B4A0).withValues(alpha: 0.15),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF00B4A0).withValues(alpha: 0.2),
-                    blurRadius: 100,
-                    spreadRadius: 50,
-                  ),
-                ],
+      body: Container(
+        decoration: const BoxDecoration(gradient: DesignTokens.headerGradient),
+        child: SafeArea(
+          child: FadeTransition(
+            opacity: _fadeAnim,
+            child: SlideTransition(
+              position: _slideAnim,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: DesignTokens.s32,
+                ),
+                child: Column(
+                  children: [
+                    const Spacer(flex: 2),
+                    _Logo(),
+                    const SizedBox(height: DesignTokens.s32),
+                    _Headline(),
+                    const Spacer(flex: 3),
+                    _GoogleSignInButton(onTap: _navigateToDashboard),
+                    const SizedBox(height: DesignTokens.s16),
+                    _Disclaimer(),
+                    const SizedBox(height: DesignTokens.s32),
+                  ],
+                ),
               ),
             ),
           ),
-          
-          SafeArea(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-              child: Column(
-                children: [
-                  // Top area: Illustration and floating icons
-                  SizedBox(
-                    height: 250,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        // Person Illustration
-                        Image.asset(
-                          'assets/images/login_person.png',
-                          height: 220,
-                          fit: BoxFit.contain,
-                        ),
-                        // Floating Icons
-                        Positioned(
-                          top: 10,
-                          left: 0,
-                          child: Image.asset('assets/images/login_icon_disney.png', width: 50),
-                        ),
-                        Positioned(
-                          top: 0,
-                          right: 50,
-                          child: Image.asset('assets/images/login_icon_youtube.png', width: 45),
-                        ),
-                        Positioned(
-                          bottom: 50,
-                          right: 0,
-                          child: Image.asset('assets/images/login_icon_spotify.png', width: 45),
-                        ),
-                        Positioned(
-                          bottom: 50,
-                          left: 20,
-                          child: Image.asset('assets/images/login_icon_netflix.png', width: 40),
-                        ),
-                      ],
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Titles
-                  const Text(
-                    'Bienvenido a PODA',
-                    style: TextStyle(
-                      fontFamily: DesignTokens.fontFamily,
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                      color: Colors.white,
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  const SizedBox(height: 10),
-                  const Text(
-                    'Controla tus suscripciones fácilmente.',
-                    style: TextStyle(
-                      fontFamily: DesignTokens.fontFamily,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w500,
-                      color: Colors.white, // In Figma it's white or light gray
-                    ),
-                    textAlign: TextAlign.center,
-                  ),
-                  
-                  const SizedBox(height: 40),
-                  
-                  // Form Fields
-                  _DarkTextField(
-                    controller: _emailController,
-                    hint: 'Email...',
-                    keyboardType: TextInputType.emailAddress,
-                  ),
-                  const SizedBox(height: 16),
-                  _DarkTextField(
-                    controller: _passwordController,
-                    hint: 'Contraseña...',
-                    obscureText: _obscurePassword,
-                    isPassword: true,
-                    onToggleVisibility: () => setState(() => _obscurePassword = !_obscurePassword),
-                  ),
-                  
-                  const SizedBox(height: 12),
-                  
-                  // Forgot Password
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {},
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        minimumSize: const Size(0, 0),
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: const Text(
-                        '¿Olvidaste de tu contraseña?',
-                        style: TextStyle(
-                          fontFamily: DesignTokens.fontFamily,
-                          fontSize: 13,
-                          color: Color(0xFF909090),
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 30),
-                  
-                  // Iniciar Sesion Button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton(
-                      onPressed: _handleSignIn,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF3366FF), // Figma blue button
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      child: const Text(
-                        'Iniciar Sesión',
-                        style: TextStyle(
-                          fontFamily: DesignTokens.fontFamily,
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Problems logging in?
-                  TextButton(
-                    onPressed: () {},
-                    child: const Text(
-                      '¿Tienes problemas al iniciar sesión?',
-                      style: TextStyle(
-                        fontFamily: DesignTokens.fontFamily,
-                        fontSize: 13,
-                        color: Color(0xFF909090),
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Divider
-                  Row(
-                    children: [
-                      const Expanded(child: Divider(color: Colors.white24)),
-                      Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: const Text(
-                          'O',
-                          style: TextStyle(
-                            fontFamily: DesignTokens.fontFamily,
-                            color: Colors.white,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ),
-                      const Expanded(child: Divider(color: Colors.white24)),
-                    ],
-                  ),
-                  
-                  const SizedBox(height: 20),
-                  
-                  // Google Button
-                  SizedBox(
-                    width: double.infinity,
-                    height: 56,
-                    child: ElevatedButton.icon(
-                      onPressed: _handleSignIn,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                      ),
-                      icon: Image.network(
-                        'https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg',
-                        width: 24,
-                        errorBuilder: (ctx, err, trace) => const Icon(Icons.g_mobiledata, color: Colors.blue, size: 30),
-                      ),
-                      label: const Text(
-                        'Google',
-                        style: TextStyle(
-                          fontFamily: DesignTokens.fontFamily,
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ),
-                  
-                  const SizedBox(height: 40),
-                ],
-              ),
+        ),
+      ),
+    );
+  }
+}
+
+class _Logo extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Container(
+          width: 88,
+          height: 88,
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.15),
+            borderRadius: BorderRadius.circular(DesignTokens.rXL),
+            border: Border.all(
+              color: Colors.white.withValues(alpha: 0.3),
+              width: 1.5,
+            ),
+          ),
+          child: const Center(
+            child: Icon(Icons.radar_rounded, size: 48, color: Colors.white),
+          ),
+        ),
+        const SizedBox(height: DesignTokens.s20),
+        const Text(
+          'SubScan',
+          style: TextStyle(
+            fontFamily: DesignTokens.fontFamily,
+            fontSize: 38,
+            fontWeight: DesignTokens.wExtraBold,
+            color: Colors.white,
+            letterSpacing: -0.5,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _Headline extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(
+          'Controla todas tus\nsuscripciones en un lugar',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontFamily: DesignTokens.fontFamily,
+            fontSize: 18,
+            fontWeight: DesignTokens.wMedium,
+            color: Colors.white.withValues(alpha: 0.90),
+            height: 1.5,
+          ),
+        ),
+        const SizedBox(height: DesignTokens.s24),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            _FeaturePill(
+              icon: Icons.notifications_active_outlined,
+              label: 'Alertas',
+            ),
+            const SizedBox(width: DesignTokens.s8),
+            _FeaturePill(icon: Icons.email_outlined, label: 'Gmail'),
+            const SizedBox(width: DesignTokens.s8),
+            _FeaturePill(icon: Icons.bar_chart_rounded, label: 'Análisis'),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _FeaturePill extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  const _FeaturePill({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+        horizontal: DesignTokens.s12,
+        vertical: DesignTokens.s6,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(DesignTokens.rFull),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: Colors.white),
+          const SizedBox(width: DesignTokens.s4),
+          Text(
+            label,
+            style: const TextStyle(
+              fontFamily: DesignTokens.fontFamily,
+              fontSize: 12,
+              fontWeight: DesignTokens.wMedium,
+              color: Colors.white,
             ),
           ),
         ],
@@ -272,59 +198,151 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-class _DarkTextField extends StatelessWidget {
-  final TextEditingController controller;
-  final String hint;
-  final bool obscureText;
-  final bool isPassword;
-  final VoidCallback? onToggleVisibility;
-  final TextInputType keyboardType;
+class _GoogleSignInButton extends ConsumerStatefulWidget {
+  final VoidCallback onTap;
+  const _GoogleSignInButton({required this.onTap});
 
-  const _DarkTextField({
-    required this.controller,
-    required this.hint,
-    this.obscureText = false,
-    this.isPassword = false,
-    this.onToggleVisibility,
-    this.keyboardType = TextInputType.text,
-  });
+  @override
+  ConsumerState<_GoogleSignInButton> createState() =>
+      _GoogleSignInButtonState();
+}
+
+class _GoogleSignInButtonState extends ConsumerState<_GoogleSignInButton> {
+  bool _loading = false;
+
+  Future<void> _handleTap() async {
+    setState(() => _loading = true);
+    try {
+      final authService = ref.read(authServiceProvider);
+      await authService.signInWithGoogle();
+      if (mounted) {
+        setState(() => _loading = false);
+        widget.onTap();
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _loading = false);
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error al iniciar sesión: $e')));
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFF13132A),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: TextField(
-        controller: controller,
-        obscureText: obscureText,
-        keyboardType: keyboardType,
-        style: const TextStyle(
-          fontFamily: DesignTokens.fontFamily,
-          fontSize: 15,
-          color: Colors.white,
-        ),
-        decoration: InputDecoration(
-          hintText: hint,
-          hintStyle: TextStyle(
-            fontFamily: DesignTokens.fontFamily,
-            fontSize: 15,
-            color: Colors.white.withValues(alpha: 0.35),
+    return SizedBox(
+      width: double.infinity,
+      height: 54,
+      child: ElevatedButton(
+        onPressed: _loading ? null : _handleTap,
+        style: ElevatedButton.styleFrom(
+          backgroundColor: Colors.white,
+          foregroundColor: DesignTokens.textPrimary,
+          elevation: DesignTokens.e4,
+          shadowColor: Colors.black26,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(DesignTokens.rM),
           ),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
-          border: InputBorder.none,
-          suffixIcon: isPassword 
-              ? GestureDetector(
-                  onTap: onToggleVisibility,
-                  child: Icon(
-                    obscureText ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                    color: Colors.white.withValues(alpha: 0.35),
-                    size: 20,
-                  ),
-                )
-              : null,
         ),
+        child: _loading
+            ? const SizedBox(
+                width: 22,
+                height: 22,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2.5,
+                  valueColor: AlwaysStoppedAnimation<Color>(
+                    DesignTokens.primary,
+                  ),
+                ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  _GoogleIcon(),
+                  const SizedBox(width: DesignTokens.s12),
+                  const Text(
+                    'Continuar con Google',
+                    style: TextStyle(
+                      fontFamily: DesignTokens.fontFamily,
+                      fontSize: 16,
+                      fontWeight: DesignTokens.wSemibold,
+                      color: DesignTokens.textPrimary,
+                    ),
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+}
+
+class _GoogleIcon extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 22,
+      height: 22,
+      child: CustomPaint(painter: _GoogleLogoPainter()),
+    );
+  }
+}
+
+class _GoogleLogoPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width / 2, size.height / 2);
+    final r = size.width / 2;
+
+    // Círculo base gris claro
+    canvas.drawCircle(center, r, Paint()..color = const Color(0xFFEEEEEE));
+
+    // Letras G en colores de Google
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 2.5;
+
+    paint.color = const Color(0xFF4285F4); // Azul
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: r * 0.65),
+      -0.5,
+      2.6,
+      false,
+      paint,
+    );
+    paint.color = const Color(0xFF34A853); // Verde
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: r * 0.65),
+      2.1,
+      1.0,
+      false,
+      paint,
+    );
+    paint.color = const Color(0xFFEA4335); // Rojo
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: r * 0.65),
+      3.1,
+      0.8,
+      false,
+      paint,
+    );
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter old) => false;
+}
+
+class _Disclaimer extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      'Al continuar aceptas los Términos de Servicio\ny la Política de Privacidad',
+      textAlign: TextAlign.center,
+      style: TextStyle(
+        fontFamily: DesignTokens.fontFamily,
+        fontSize: 11,
+        color: Colors.white.withValues(alpha: 0.55),
+        height: 1.5,
       ),
     );
   }
