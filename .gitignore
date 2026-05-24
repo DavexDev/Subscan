@@ -54,3 +54,6 @@ GUIA_EQUIPO_SUBSCAN.md
 # Firebase config (contains API keys)
 android/app/google-services.json
 ios/Runner/GoogleService-Info.plist
+
+# Credenciales privadas (Supabase, etc.) - NO subir. Usar .env.example como plantilla.
+.env
