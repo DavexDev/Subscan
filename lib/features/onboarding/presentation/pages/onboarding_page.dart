@@ -52,7 +52,7 @@ const _kPages = [
   ),
   _PageData(
     title: 'Analizamos\ntus gastos',
-    body: 'SubScan detecta renovaciones automáticas y servicios que casi no utilizas.',
+    body: 'PODA detecta renovaciones automáticas y servicios que casi no utilizas.',
     imagePath: 'assets/images/onboarding/onb2.png',
     buttonLabel: 'SIGUIENTE',
   ),

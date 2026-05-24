@@ -10,6 +10,27 @@ class AuthService {
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
+  /// Inicia sesión con email y contraseña.
+  Future<UserCredential> signInWithEmail(String email, String password) async {
+    return await _auth.signInWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+  }
+
+  /// Crea una cuenta nueva con email y contraseña.
+  Future<UserCredential> registerWithEmail(String email, String password) async {
+    return await _auth.createUserWithEmailAndPassword(
+      email: email,
+      password: password,
+    );
+  }
+
+  /// Envía email de recuperación de contraseña.
+  Future<void> resetPassword(String email) async {
+    await _auth.sendPasswordResetEmail(email: email);
+  }
+
   /// Inicia sesión con Google usando Firebase Auth.
   Future<UserCredential> signInWithGoogle() async {
     final googleUser = await _googleSignIn.signIn();

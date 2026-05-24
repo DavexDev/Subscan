@@ -1,0 +1,1122 @@
+﻿{
+    "12:3":  {
+                 "document":  {
+                                  "id":  "12:3",
+                                  "name":  "FLOW PRINCIPAL",
+                                  "type":  "SECTION",
+                                  "scrollBehavior":  "SCROLLS",
+                                  "children":  [
+                                                   {
+                                                       "id":  "12:8",
+                                                       "name":  "SPLASH",
+                                                       "type":  "FRAME",
+                                                       "scrollBehavior":  "SCROLLS",
+                                                       "children":  "",
+                                                       "blendMode":  "PASS_THROUGH",
+                                                       "clipsContent":  true,
+                                                       "background":  "",
+                                                       "fills":  "",
+                                                       "strokes":  "",
+                                                       "cornerRadius":  50.0,
+                                                       "cornerSmoothing":  0.0,
+                                                       "strokeWeight":  1.0,
+                                                       "strokeAlign":  "INSIDE",
+                                                       "backgroundColor":  "@{r=0.011764706112444401; g=0.043137256056070328; b=0.24705882370471954; a=1.0}",
+                                                       "absoluteBoundingBox":  "@{x=-860.0; y=-140.0; width=390.0; height=844.0}",
+                                                       "absoluteRenderBounds":  "@{x=-860.0; y=-140.0; width=390.0; height=844.0}",
+                                                       "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                       "effects":  "",
+                                                       "interactions":  "",
+                                                       "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                   },
+                                                   {
+                                                       "id":  "53:94",
+                                                       "name":  "ESTADÍSTICAS",
+                                                       "type":  "FRAME",
+                                                       "scrollBehavior":  "SCROLLS",
+                                                       "children":  "                                                                  ",
+                                                       "blendMode":  "PASS_THROUGH",
+                                                       "clipsContent":  true,
+                                                       "background":  "",
+                                                       "fills":  "",
+                                                       "strokes":  "",
+                                                       "cornerRadius":  50.0,
+                                                       "cornerSmoothing":  0.0,
+                                                       "strokeWeight":  1.0,
+                                                       "strokeAlign":  "INSIDE",
+                                                       "backgroundColor":  "@{r=0.011764706112444401; g=0.043137256056070328; b=0.24705882370471954; a=1.0}",
+                                                       "absoluteBoundingBox":  "@{x=-860.0; y=860.0; width=390.0; height=1035.0}",
+                                                       "absoluteRenderBounds":  "@{x=-860.0; y=860.0; width=390.0; height=1035.0}",
+                                                       "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                       "effects":  "",
+                                                       "interactions":  "",
+                                                       "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                   },
+                                                   {
+                                                       "id":  "53:95",
+                                                       "name":  "ALERTAS/NOTI",
+                                                       "type":  "FRAME",
+                                                       "scrollBehavior":  "SCROLLS",
+                                                       "children":  "                                                                  ",
+                                                       "blendMode":  "PASS_THROUGH",
+                                                       "clipsContent":  true,
+                                                       "background":  "",
+                                                       "fills":  "",
+                                                       "strokes":  "",
+                                                       "cornerRadius":  50.0,
+                                                       "cornerSmoothing":  0.0,
+                                                       "strokeWeight":  1.0,
+                                                       "strokeAlign":  "INSIDE",
+                                                       "backgroundColor":  "@{r=0.011764706112444401; g=0.043137256056070328; b=0.24705882370471954; a=1.0}",
+                                                       "absoluteBoundingBox":  "@{x=-376.0; y=860.0; width=390.0; height=1035.0}",
+                                                       "absoluteRenderBounds":  "@{x=-376.0; y=860.0; width=390.0; height=1035.0}",
+                                                       "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                       "effects":  "",
+                                                       "interactions":  "",
+                                                       "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                   },
+                                                   {
+                                                       "id":  "53:96",
+                                                       "name":  "Pantalla PODA",
+                                                       "type":  "FRAME",
+                                                       "scrollBehavior":  "SCROLLS",
+                                                       "children":  "",
+                                                       "blendMode":  "PASS_THROUGH",
+                                                       "clipsContent":  true,
+                                                       "background":  "",
+                                                       "fills":  "",
+                                                       "strokes":  "",
+                                                       "cornerRadius":  50.0,
+                                                       "cornerSmoothing":  0.0,
+                                                       "strokeWeight":  1.0,
+                                                       "strokeAlign":  "INSIDE",
+                                                       "backgroundColor":  "@{r=0.011764706112444401; g=0.043137256056070328; b=0.24705882370471954; a=1.0}",
+                                                       "absoluteBoundingBox":  "@{x=104.0; y=860.0; width=390.0; height=844.0}",
+                                                       "absoluteRenderBounds":  "@{x=104.0; y=860.0; width=390.0; height=844.0}",
+                                                       "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                       "effects":  "",
+                                                       "interactions":  "",
+                                                       "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                   },
+                                                   {
+                                                       "id":  "53:97",
+                                                       "name":  "Agregar suscripción",
+                                                       "type":  "FRAME",
+                                                       "scrollBehavior":  "SCROLLS",
+                                                       "children":  "                                        ",
+                                                       "blendMode":  "PASS_THROUGH",
+                                                       "clipsContent":  true,
+                                                       "background":  "",
+                                                       "fills":  "",
+                                                       "strokes":  "",
+                                                       "cornerRadius":  50.0,
+                                                       "cornerSmoothing":  0.0,
+                                                       "strokeWeight":  1.0,
+                                                       "strokeAlign":  "INSIDE",
+                                                       "backgroundColor":  "@{r=0.011764706112444401; g=0.043137256056070328; b=0.24705882370471954; a=1.0}",
+                                                       "absoluteBoundingBox":  "@{x=580.0; y=860.0; width=390.0; height=844.0}",
+                                                       "absoluteRenderBounds":  "@{x=580.0; y=860.0; width=390.0; height=844.0}",
+                                                       "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                       "effects":  "",
+                                                       "interactions":  "",
+                                                       "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                   },
+                                                   {
+                                                       "id":  "15:11",
+                                                       "name":  "ONBOARDING_1",
+                                                       "type":  "FRAME",
+                                                       "scrollBehavior":  "SCROLLS",
+                                                       "children":  "       ",
+                                                       "blendMode":  "PASS_THROUGH",
+                                                       "clipsContent":  true,
+                                                       "background":  "",
+                                                       "fills":  "",
+                                                       "strokes":  "",
+                                                       "cornerRadius":  50.0,
+                                                       "cornerSmoothing":  0.0,
+                                                       "strokeWeight":  1.0,
+                                                       "strokeAlign":  "INSIDE",
+                                                       "backgroundColor":  "@{r=0.011764706112444401; g=0.043137256056070328; b=0.24705882370471954; a=1.0}",
+                                                       "absoluteBoundingBox":  "@{x=-376.0; y=-140.0; width=390.0; height=844.0}",
+                                                       "absoluteRenderBounds":  "@{x=-376.0; y=-140.0; width=390.0; height=844.0}",
+                                                       "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                       "effects":  "",
+                                                       "interactions":  "",
+                                                       "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                   },
+                                                   {
+                                                       "id":  "16:46",
+                                                       "name":  "ONBOARDING_2",
+                                                       "type":  "FRAME",
+                                                       "scrollBehavior":  "SCROLLS",
+                                                       "children":  "        ",
+                                                       "blendMode":  "PASS_THROUGH",
+                                                       "clipsContent":  true,
+                                                       "background":  "",
+                                                       "fills":  "",
+                                                       "strokes":  "",
+                                                       "cornerRadius":  50.0,
+                                                       "cornerSmoothing":  0.0,
+                                                       "strokeWeight":  1.0,
+                                                       "strokeAlign":  "INSIDE",
+                                                       "backgroundColor":  "@{r=0.011764706112444401; g=0.043137256056070328; b=0.24705882370471954; a=1.0}",
+                                                       "absoluteBoundingBox":  "@{x=104.0; y=-140.0; width=390.0; height=844.0}",
+                                                       "absoluteRenderBounds":  "@{x=104.0; y=-140.0; width=390.0; height=844.0}",
+                                                       "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                       "effects":  "",
+                                                       "interactions":  "",
+                                                       "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                   },
+                                                   {
+                                                       "id":  "16:58",
+                                                       "name":  "ONBOARDING_3",
+                                                       "type":  "FRAME",
+                                                       "scrollBehavior":  "SCROLLS",
+                                                       "children":  "       ",
+                                                       "blendMode":  "PASS_THROUGH",
+                                                       "clipsContent":  true,
+                                                       "background":  "",
+                                                       "fills":  "",
+                                                       "strokes":  "",
+                                                       "cornerRadius":  50.0,
+                                                       "cornerSmoothing":  0.0,
+                                                       "strokeWeight":  1.0,
+                                                       "strokeAlign":  "INSIDE",
+                                                       "backgroundColor":  "@{r=0.011764706112444401; g=0.043137256056070328; b=0.24705882370471954; a=1.0}",
+                                                       "absoluteBoundingBox":  "@{x=576.0; y=-140.0; width=390.0; height=844.0}",
+                                                       "absoluteRenderBounds":  "@{x=576.0; y=-140.0; width=390.0; height=844.0}",
+                                                       "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                       "effects":  "",
+                                                       "interactions":  "",
+                                                       "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                   },
+                                                   {
+                                                       "id":  "16:93",
+                                                       "name":  "LOGIN",
+                                                       "type":  "FRAME",
+                                                       "scrollBehavior":  "SCROLLS",
+                                                       "children":  "                   ",
+                                                       "blendMode":  "PASS_THROUGH",
+                                                       "clipsContent":  true,
+                                                       "background":  "",
+                                                       "fills":  "",
+                                                       "strokes":  "",
+                                                       "cornerRadius":  50.0,
+                                                       "cornerSmoothing":  0.0,
+                                                       "strokeWeight":  1.0,
+                                                       "strokeAlign":  "INSIDE",
+                                                       "backgroundColor":  "@{r=0.011764706112444401; g=0.043137256056070328; b=0.24705882370471954; a=1.0}",
+                                                       "absoluteBoundingBox":  "@{x=1043.0; y=-140.0; width=390.0; height=844.0}",
+                                                       "absoluteRenderBounds":  "@{x=1043.0; y=-140.0; width=390.0; height=844.0}",
+                                                       "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                       "effects":  "",
+                                                       "interactions":  "",
+                                                       "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                   },
+                                                   {
+                                                       "id":  "44:77",
+                                                       "name":  "MI_CUENTA",
+                                                       "type":  "FRAME",
+                                                       "scrollBehavior":  "SCROLLS",
+                                                       "children":  "                                      ",
+                                                       "blendMode":  "PASS_THROUGH",
+                                                       "clipsContent":  true,
+                                                       "background":  "",
+                                                       "fills":  "",
+                                                       "strokes":  "",
+                                                       "cornerRadius":  50.0,
+                                                       "cornerSmoothing":  0.0,
+                                                       "strokeWeight":  1.0,
+                                                       "strokeAlign":  "INSIDE",
+                                                       "backgroundColor":  "@{r=0.011764706112444401; g=0.043137256056070328; b=0.24705882370471954; a=1.0}",
+                                                       "absoluteBoundingBox":  "@{x=2025.0; y=-153.0; width=390.0; height=844.0}",
+                                                       "absoluteRenderBounds":  "@{x=2025.0; y=-153.0; width=390.0; height=844.0}",
+                                                       "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                       "effects":  "",
+                                                       "interactions":  "",
+                                                       "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                   },
+                                                   {
+                                                       "id":  "38:550",
+                                                       "name":  "APPS",
+                                                       "type":  "FRAME",
+                                                       "scrollBehavior":  "SCROLLS",
+                                                       "children":  "                                                                     ",
+                                                       "blendMode":  "PASS_THROUGH",
+                                                       "clipsContent":  true,
+                                                       "background":  "",
+                                                       "fills":  "",
+                                                       "strokes":  "",
+                                                       "cornerRadius":  50.0,
+                                                       "cornerSmoothing":  0.0,
+                                                       "strokeWeight":  1.0,
+                                                       "strokeAlign":  "INSIDE",
+                                                       "backgroundColor":  "@{r=0.011764706112444401; g=0.043137256056070328; b=0.24705882370471954; a=1.0}",
+                                                       "absoluteBoundingBox":  "@{x=1043.0; y=782.0; width=390.0; height=1000.0}",
+                                                       "absoluteRenderBounds":  "@{x=1043.0; y=782.0; width=390.0; height=1000.0}",
+                                                       "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                       "effects":  "",
+                                                       "interactions":  "",
+                                                       "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                   },
+                                                   {
+                                                       "id":  "12:17",
+                                                       "name":  "DASHBOARD",
+                                                       "type":  "FRAME",
+                                                       "scrollBehavior":  "SCROLLS",
+                                                       "children":  "                                                            ",
+                                                       "blendMode":  "PASS_THROUGH",
+                                                       "clipsContent":  true,
+                                                       "background":  "",
+                                                       "fills":  "",
+                                                       "strokes":  "",
+                                                       "cornerRadius":  50.0,
+                                                       "cornerSmoothing":  0.0,
+                                                       "strokeWeight":  1.0,
+                                                       "strokeAlign":  "INSIDE",
+                                                       "backgroundColor":  "@{r=0.011764706112444401; g=0.043137256056070328; b=0.24705882370471954; a=1.0}",
+                                                       "overflowDirection":  "VERTICAL_SCROLLING",
+                                                       "absoluteBoundingBox":  "@{x=1523.0; y=-145.0; width=390.0; height=1400.0}",
+                                                       "absoluteRenderBounds":  "@{x=1523.0; y=-145.0; width=390.0; height=1400.0}",
+                                                       "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                       "effects":  "",
+                                                       "interactions":  "",
+                                                       "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                   },
+                                                   {
+                                                       "id":  "38:503",
+                                                       "name":  "Frame 10",
+                                                       "type":  "FRAME",
+                                                       "scrollBehavior":  "SCROLLS",
+                                                       "children":  "         ",
+                                                       "blendMode":  "PASS_THROUGH",
+                                                       "clipsContent":  false,
+                                                       "background":  "",
+                                                       "fills":  "",
+                                                       "strokes":  "",
+                                                       "strokeWeight":  1.0,
+                                                       "strokeAlign":  "INSIDE",
+                                                       "backgroundColor":  "@{r=0.20392157137393951; g=0.78039216995239258; b=0.90980392694473267; a=1.0}",
+                                                       "layoutMode":  "GRID",
+                                                       "primaryAxisSizingMode":  "FIXED",
+                                                       "paddingLeft":  20.0,
+                                                       "paddingRight":  20.0,
+                                                       "paddingTop":  10.0,
+                                                       "paddingBottom":  10.0,
+                                                       "gridColumnCount":  5,
+                                                       "gridRowCount":  2,
+                                                       "gridRowGap":  1.0,
+                                                       "gridColumnGap":  24.0,
+                                                       "gridColumnsSizing":  "repeat(5,minmax(0,1fr))",
+                                                       "gridRowsSizing":  "  48px fit-content(100%)",
+                                                       "absoluteBoundingBox":  "@{x=1527.0; y=1298.0; width=390.0; height=101.0}",
+                                                       "absoluteRenderBounds":  "@{x=1516.5999755859375; y=1294.5999755859375; width=410.8000488281250; height=121.8000488281250}",
+                                                       "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                       "layoutSizingHorizontal":  "FIXED",
+                                                       "layoutSizingVertical":  "HUG",
+                                                       "effects":  "",
+                                                       "interactions":  "",
+                                                       "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                   },
+                                                   {
+                                                       "id":  "19:195",
+                                                       "name":  "UserCheck",
+                                                       "type":  "INSTANCE",
+                                                       "scrollBehavior":  "SCROLLS",
+                                                       "componentId":  "19:156",
+                                                       "componentProperties":  "@{Format=; Weight=}",
+                                                       "overrides":  "",
+                                                       "children":  "",
+                                                       "blendMode":  "PASS_THROUGH",
+                                                       "clipsContent":  false,
+                                                       "background":  "",
+                                                       "fills":  "",
+                                                       "strokes":  "",
+                                                       "strokeWeight":  1.0,
+                                                       "strokeAlign":  "INSIDE",
+                                                       "backgroundColor":  "@{r=0.0; g=0.0; b=0.0; a=0.0}",
+                                                       "absoluteBoundingBox":  "@{x=1346.0; y=261.0; width=32.0; height=32.0}",
+                                                       "absoluteRenderBounds":  "@{x=1346.0; y=261.0; width=32.003906250; height=32.0}",
+                                                       "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                       "effects":  "",
+                                                       "interactions":  "",
+                                                       "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                   },
+                                                   {
+                                                       "id":  "19:261",
+                                                       "name":  "WebcamSlash",
+                                                       "type":  "INSTANCE",
+                                                       "scrollBehavior":  "SCROLLS",
+                                                       "componentId":  "19:205",
+                                                       "componentProperties":  "@{Format=; Weight=}",
+                                                       "overrides":  "",
+                                                       "children":  "",
+                                                       "blendMode":  "PASS_THROUGH",
+                                                       "clipsContent":  false,
+                                                       "background":  "",
+                                                       "fills":  "",
+                                                       "strokes":  "",
+                                                       "strokeWeight":  1.0,
+                                                       "strokeAlign":  "INSIDE",
+                                                       "backgroundColor":  "@{r=0.0; g=0.0; b=0.0; a=0.0}",
+                                                       "absoluteBoundingBox":  "@{x=1346.0; y=331.0; width=32.0; height=32.0}",
+                                                       "absoluteRenderBounds":  "@{x=1346.0; y=331.0; width=32.0; height=32.0}",
+                                                       "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                       "effects":  "",
+                                                       "interactions":  "",
+                                                       "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                   },
+                                                   {
+                                                       "id":  "31:157",
+                                                       "name":  "Layers",
+                                                       "type":  "INSTANCE",
+                                                       "scrollBehavior":  "SCROLLS",
+                                                       "explicitVariableModes":  "@{VariableCollectionId:d865e2de60addf8427171806afd2b3252a574f78/4245:205=3919:22}",
+                                                       "componentId":  "31:145",
+                                                       "componentProperties":  "@{Size=}",
+                                                       "overrides":  "",
+                                                       "children":  "",
+                                                       "blendMode":  "PASS_THROUGH",
+                                                       "clipsContent":  true,
+                                                       "background":  "",
+                                                       "fills":  "",
+                                                       "strokes":  "",
+                                                       "strokeWeight":  1.0,
+                                                       "strokeAlign":  "INSIDE",
+                                                       "backgroundColor":  "@{r=0.0; g=0.0; b=0.0; a=0.0}",
+                                                       "absoluteBoundingBox":  "@{x=1545.0; y=268.0; width=30.0; height=30.0}",
+                                                       "absoluteRenderBounds":  "@{x=1545.0; y=268.0; width=30.0; height=30.0}",
+                                                       "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                       "effects":  "",
+                                                       "interactions":  "",
+                                                       "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                   },
+                                                   {
+                                                       "id":  "31:243",
+                                                       "name":  "Cast",
+                                                       "type":  "INSTANCE",
+                                                       "scrollBehavior":  "SCROLLS",
+                                                       "explicitVariableModes":  "@{VariableCollectionId:d865e2de60addf8427171806afd2b3252a574f78/4245:205=3919:22}",
+                                                       "componentId":  "31:231",
+                                                       "componentProperties":  "@{Size=}",
+                                                       "overrides":  "",
+                                                       "children":  "",
+                                                       "blendMode":  "PASS_THROUGH",
+                                                       "clipsContent":  true,
+                                                       "background":  "",
+                                                       "fills":  "",
+                                                       "strokes":  "",
+                                                       "strokeWeight":  1.0,
+                                                       "strokeAlign":  "INSIDE",
+                                                       "backgroundColor":  "@{r=0.0; g=0.0; b=0.0; a=0.0}",
+                                                       "absoluteBoundingBox":  "@{x=1545.0; y=457.0; width=30.0; height=27.0}",
+                                                       "absoluteRenderBounds":  "@{x=1545.0; y=457.0; width=30.0; height=27.0}",
+                                                       "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                       "effects":  "",
+                                                       "interactions":  "",
+                                                       "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                   },
+                                                   {
+                                                       "id":  "31:254",
+                                                       "name":  "netflix 2",
+                                                       "type":  "RECTANGLE",
+                                                       "scrollBehavior":  "SCROLLS",
+                                                       "blendMode":  "PASS_THROUGH",
+                                                       "fills":  "",
+                                                       "strokes":  "",
+                                                       "strokeWeight":  1.0,
+                                                       "strokeAlign":  "INSIDE",
+                                                       "absoluteBoundingBox":  "@{x=1680.0; y=507.0; width=46.0; height=46.0}",
+                                                       "absoluteRenderBounds":  "@{x=1680.0; y=507.0; width=46.0; height=46.0}",
+                                                       "preserveRatio":  true,
+                                                       "targetAspectRatio":  "@{x=512.0; y=512.0}",
+                                                       "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                       "effects":  "",
+                                                       "interactions":  "",
+                                                       "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                   },
+                                                   {
+                                                       "id":  "38:52",
+                                                       "name":  "Search",
+                                                       "type":  "INSTANCE",
+                                                       "scrollBehavior":  "SCROLLS",
+                                                       "componentId":  "38:41",
+                                                       "componentProperties":  "@{Size=}",
+                                                       "overrides":  "",
+                                                       "children":  "",
+                                                       "blendMode":  "PASS_THROUGH",
+                                                       "clipsContent":  true,
+                                                       "background":  "",
+                                                       "fills":  "",
+                                                       "strokes":  "",
+                                                       "strokeWeight":  1.0,
+                                                       "strokeAlign":  "INSIDE",
+                                                       "backgroundColor":  "@{r=0.0; g=0.0; b=0.0; a=0.0}",
+                                                       "absoluteBoundingBox":  "@{x=1825.0; y=234.0; width=16.0; height=16.0}",
+                                                       "absoluteRenderBounds":  "@{x=1825.0; y=234.0; width=16.0; height=16.0}",
+                                                       "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                       "effects":  "",
+                                                       "interactions":  "",
+                                                       "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                   },
+                                                   {
+                                                       "id":  "38:70",
+                                                       "name":  "Trending up",
+                                                       "type":  "INSTANCE",
+                                                       "scrollBehavior":  "SCROLLS",
+                                                       "explicitVariableModes":  "@{VariableCollectionId:d865e2de60addf8427171806afd2b3252a574f78/4245:205=3919:22}",
+                                                       "componentId":  "38:58",
+                                                       "componentProperties":  "@{Size=}",
+                                                       "overrides":  "",
+                                                       "children":  "",
+                                                       "blendMode":  "PASS_THROUGH",
+                                                       "clipsContent":  true,
+                                                       "background":  "",
+                                                       "fills":  "",
+                                                       "strokes":  "",
+                                                       "strokeWeight":  1.0,
+                                                       "strokeAlign":  "INSIDE",
+                                                       "backgroundColor":  "@{r=0.0; g=0.0; b=0.0; a=0.0}",
+                                                       "absoluteBoundingBox":  "@{x=1545.0; y=644.0; width=30.0; height=30.0}",
+                                                       "absoluteRenderBounds":  "@{x=1545.0; y=644.0; width=30.0; height=30.0}",
+                                                       "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                       "effects":  "",
+                                                       "interactions":  "",
+                                                       "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                   },
+                                                   {
+                                                       "id":  "44:111",
+                                                       "name":  "Bell",
+                                                       "type":  "INSTANCE",
+                                                       "scrollBehavior":  "SCROLLS",
+                                                       "componentId":  "38:465",
+                                                       "componentProperties":  "@{Size=}",
+                                                       "overrides":  " ",
+                                                       "children":  "",
+                                                       "blendMode":  "PASS_THROUGH",
+                                                       "clipsContent":  true,
+                                                       "background":  "",
+                                                       "fills":  "",
+                                                       "strokes":  "",
+                                                       "strokeWeight":  1.0,
+                                                       "strokeAlign":  "INSIDE",
+                                                       "backgroundColor":  "@{r=0.0; g=0.0; b=0.0; a=0.0}",
+                                                       "absoluteBoundingBox":  "@{x=2345.0; y=-96.0; width=50.799999237060547; height=48.0}",
+                                                       "absoluteRenderBounds":  "@{x=2345.0; y=-96.0; width=50.8000488281250; height=48.0}",
+                                                       "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                       "effects":  "",
+                                                       "interactions":  "",
+                                                       "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                   },
+                                                   {
+                                                       "id":  "44:411",
+                                                       "name":  "Bell",
+                                                       "type":  "INSTANCE",
+                                                       "scrollBehavior":  "SCROLLS",
+                                                       "componentId":  "38:465",
+                                                       "componentProperties":  "@{Size=}",
+                                                       "overrides":  " ",
+                                                       "children":  "",
+                                                       "blendMode":  "PASS_THROUGH",
+                                                       "clipsContent":  true,
+                                                       "background":  "",
+                                                       "fills":  "",
+                                                       "strokes":  "",
+                                                       "strokeWeight":  1.0,
+                                                       "strokeAlign":  "INSIDE",
+                                                       "backgroundColor":  "@{r=0.0; g=0.0; b=0.0; a=0.0}",
+                                                       "absoluteBoundingBox":  "@{x=2070.0; y=316.0; width=50.799999237060547; height=48.0}",
+                                                       "absoluteRenderBounds":  "@{x=2070.0; y=316.0; width=50.8000488281250; height=48.0}",
+                                                       "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                       "effects":  "",
+                                                       "interactions":  "",
+                                                       "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                   },
+                                                   {
+                                                       "id":  "53:63",
+                                                       "name":  "ESTE ES EL FRAME BETA* DE LA BARRA DE NAVEGACIÓN",
+                                                       "type":  "TEXT",
+                                                       "scrollBehavior":  "SCROLLS",
+                                                       "blendMode":  "PASS_THROUGH",
+                                                       "fills":  "",
+                                                       "strokes":  "",
+                                                       "strokeWeight":  1.0,
+                                                       "strokeAlign":  "OUTSIDE",
+                                                       "absoluteBoundingBox":  "@{x=1532.0; y=1422.0; width=361.0; height=16.0}",
+                                                       "absoluteRenderBounds":  "@{x=1533.0120849609375; y=1422.5198974609375; width=358.9704589843750; height=11.5993652343750}",
+                                                       "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                       "characters":  "ESTE ES EL FRAME BETA* DE LA BARRA DE NAVEGACIÓN",
+                                                       "characterStyleOverrides":  "",
+                                                       "styleOverrideTable":  "",
+                                                       "lineTypes":  "NONE",
+                                                       "lineIndentations":  "0",
+                                                       "style":  "@{fontFamily=Inter; fontPostScriptName=Inter-ExtraBold; fontStyle=Extra Bold; fontWeight=800; textAutoResize=WIDTH_AND_HEIGHT; fontSize=12.0; textAlignHorizontal=CENTER; textAlignVertical=TOP; letterSpacing=0.50; lineHeightPx=16.0; lineHeightPercent=110.17214202880859; lineHeightPercentFontSize=133.33332824707031; lineHeightUnit=PIXELS}",
+                                                       "layoutVersion":  5,
+                                                       "effects":  "",
+                                                       "interactions":  "",
+                                                       "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                   },
+                                                   {
+                                                       "id":  "58:297",
+                                                       "name":  "Arrow left",
+                                                       "type":  "INSTANCE",
+                                                       "scrollBehavior":  "SCROLLS",
+                                                       "explicitVariableModes":  "@{VariableCollectionId:d865e2de60addf8427171806afd2b3252a574f78/5613:369=3919:22}",
+                                                       "componentId":  "38:591",
+                                                       "overrides":  "",
+                                                       "children":  "",
+                                                       "blendMode":  "PASS_THROUGH",
+                                                       "clipsContent":  true,
+                                                       "background":  "",
+                                                       "fills":  "",
+                                                       "strokes":  "",
+                                                       "strokeWeight":  1.0,
+                                                       "strokeAlign":  "INSIDE",
+                                                       "backgroundColor":  "@{r=0.0; g=0.0; b=0.0; a=0.0}",
+                                                       "absoluteBoundingBox":  "@{x=-355.0; y=889.0; width=30.0; height=30.0}",
+                                                       "absoluteRenderBounds":  "@{x=-355.0; y=889.0; width=30.0; height=30.0}",
+                                                       "constraints":  "@{vertical=TOP; horizontal=LEFT}",
+                                                       "effects":  "",
+                                                       "interactions":  "",
+                                                       "complexStrokeProperties":  "@{strokeType=BASIC}"
+                                                   }
+                                               ],
+                                  "fills":  [
+                                                {
+                                                    "blendMode":  "NORMAL",
+                                                    "type":  "SOLID",
+                                                    "color":  "@{r=0.70673078298568726; g=0.70673078298568726; b=0.70673078298568726; a=1.0}"
+                                                }
+                                            ],
+                                  "strokes":  [
+                                                  {
+                                                      "opacity":  0.10000000149011612,
+                                                      "blendMode":  "NORMAL",
+                                                      "type":  "SOLID",
+                                                      "color":  "@{r=0.0; g=0.0; b=0.0; a=1.0}"
+                                                  }
+                                              ],
+                                  "strokeWeight":  1.0,
+                                  "strokeAlign":  "INSIDE",
+                                  "absoluteBoundingBox":  {
+                                                              "x":  -1082.0,
+                                                              "y":  -358.0,
+                                                              "width":  4500.0,
+                                                              "height":  2500.0
+                                                          },
+                                  "absoluteRenderBounds":  {
+                                                               "x":  -1082.0,
+                                                               "y":  -358.0,
+                                                               "width":  4500.0,
+                                                               "height":  2500.0
+                                                           },
+                                  "sectionContentsHidden":  false
+                              },
+                 "components":  {
+                                    "53:258":  {
+                                                   "key":  "fee8359b6670062675e662fd2b39c86301cd13ec",
+                                                   "name":  "Calendar",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "documentationLinks":  [
+                                                                              "@{uri=https://ui.shadcn.com/docs/components/calendar}"
+                                                                          ]
+                                               },
+                                    "53:144":  {
+                                                   "key":  "31a112590545771658a49d42c11ca9b14f32ed72",
+                                                   "name":  "Variant=Subtle, State=Default, Size=Small",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "componentSetId":  "53:138",
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "53:115":  {
+                                                   "key":  "a5e09c10bc4f27f8573b9847711a9c1534852fa9",
+                                                   "name":  "Chevron left",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "53:226":  {
+                                                   "key":  "a689a3fc9c6bd587c85c2f055acbf4427f4d7297",
+                                                   "name":  "Calendar Select Group",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "53:186":  {
+                                                   "key":  "be93c88adf7884b15e991d81580604c46b503b2e",
+                                                   "name":  "Calendar Month Field",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "53:178":  {
+                                                   "key":  "806c3ed4b14dd3c77e0eab1a5bb8c34b13ade612",
+                                                   "name":  "Chevron down",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "53:207":  {
+                                                   "key":  "ad83530d893c653c960400cfbf4238b30e277f8b",
+                                                   "name":  "Calendar Year Field",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "53:229":  {
+                                                   "key":  "c9c5ff6dea9b86c4061c1d9e35a0f09b5a7732bf",
+                                                   "name":  "Chevron right",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "53:246":  {
+                                                   "key":  "7a47d042af24e39430fe3b321600dbf2b4c1eeb8",
+                                                   "name":  "State=Hidden",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "componentSetId":  "53:242",
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "53:243":  {
+                                                   "key":  "0566eb7fc4ff2572623a9b84666ee9fb330c41be",
+                                                   "name":  "State=Default",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "componentSetId":  "53:242",
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "53:245":  {
+                                                   "key":  "2fe7c0d31846943c147637122731db1ee75edb72",
+                                                   "name":  "State=Active",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "componentSetId":  "53:242",
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "53:248":  {
+                                                   "key":  "cc7195aec5d2ac78c09d43684a9e26eeba8cf564",
+                                                   "name":  "State=Range",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "componentSetId":  "53:242",
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "53:247":  {
+                                                   "key":  "30bfa3723ff151a47680ccd1daaa8e1f1d1c1513",
+                                                   "name":  "State=Disabled",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "componentSetId":  "53:242",
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "38:591":  {
+                                                   "key":  "9fb1b830bdaf8f01bdac79d3fbfe23def0c2cf37",
+                                                   "name":  "Arrow left",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "19:135":  {
+                                                   "key":  "8b44f4f4e0a9929f3bba203ad11caadbd0376847",
+                                                   "name":  "INPUT",
+                                                   "description":  "",
+                                                   "remote":  false,
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "31:119":  {
+                                                   "key":  "d5570e7414762bf1f4903727d58a429a1fdbba7a",
+                                                   "name":  "Type=Image, Size=Large, Shape=Circle",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "componentSetId":  "31:109",
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "38:604":  {
+                                                   "key":  "3cd99e34a1373f1a2c066d547af5f7a218e0c6e2",
+                                                   "name":  "Calendar",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "38:617":  {
+                                                   "key":  "c1b62f2887fe4372aa3e520c01b580783c1086cf",
+                                                   "name":  "Size=48",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "componentSetId":  "38:616",
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "38:635":  {
+                                                   "key":  "1883a63be5924b74c6b9e45675e9677acedea0f8",
+                                                   "name":  "Play circle",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "43:657":  {
+                                                   "key":  "352aa23edfc705cefba9e811fb490ade7abdb685",
+                                                   "name":  "Check circle",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "31:61":  {
+                                                  "key":  "d2eabd255a20e48cdb87f48487f85d858314d885",
+                                                  "name":  "Size=48",
+                                                  "description":  "",
+                                                  "remote":  true,
+                                                  "componentSetId":  "31:60",
+                                                  "documentationLinks":  [
+
+                                                                         ]
+                                              },
+                                    "31:222":  {
+                                                   "key":  "f5b06be2536a7afb55519fa6b138cbc96b82f281",
+                                                   "name":  "add_circle",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "38:438":  {
+                                                   "key":  "16fdee8e2c18c84ddb27563b908b3eff5d9a5c8e",
+                                                   "name":  "Home",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "38:443":  {
+                                                   "key":  "a29c8d88ed817311f737b90b5660dfe142eeb47a",
+                                                   "name":  "Bar chart-2",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "38:449":  {
+                                                   "key":  "c018edf89117286e9834d95578e67db40dd78dab",
+                                                   "name":  "Size=48",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "componentSetId":  "38:448",
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "38:465":  {
+                                                   "key":  "9b4aca85e6f5816fb2dfa3dd334c233a017e626c",
+                                                   "name":  "Size=48",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "componentSetId":  "38:464",
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "38:481":  {
+                                                   "key":  "fe833d2403a8aa708a0b78f5ee91b64f3a93cdbb",
+                                                   "name":  "Size=48",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "componentSetId":  "38:480",
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "19:156":  {
+                                                   "key":  "95fccdbf67549734bef4f449739e07dcc4be87d6",
+                                                   "name":  "Format=Outline, Weight=Bold",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "componentSetId":  "19:149",
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "19:205":  {
+                                                   "key":  "d0e0d239d11b5b818599dce77e98951ca2ac9bd2",
+                                                   "name":  "Format=Outline, Weight=Bold",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "componentSetId":  "19:198",
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "31:145":  {
+                                                   "key":  "00e1484f7c9168d213137fea26ad0e17fdd281b9",
+                                                   "name":  "Size=48",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "componentSetId":  "31:144",
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "31:231":  {
+                                                   "key":  "a0a30424871b7f8fdd8c867741555d8bdc13cfc7",
+                                                   "name":  "Size=48",
+                                                   "description":  "",
+                                                   "remote":  true,
+                                                   "componentSetId":  "31:230",
+                                                   "documentationLinks":  [
+
+                                                                          ]
+                                               },
+                                    "38:41":  {
+                                                  "key":  "5ce23625e5626fe7d58dd3cbe10b45e86d43fa0b",
+                                                  "name":  "Size=16",
+                                                  "description":  "",
+                                                  "remote":  true,
+                                                  "componentSetId":  "38:39",
+                                                  "documentationLinks":  [
+
+                                                                         ]
+                                              },
+                                    "38:58":  {
+                                                  "key":  "a320a17edcb4e350a09bf00dbea8da01fd381359",
+                                                  "name":  "Size=48",
+                                                  "description":  "",
+                                                  "remote":  true,
+                                                  "componentSetId":  "38:57",
+                                                  "documentationLinks":  [
+
+                                                                         ]
+                                              }
+                                },
+                 "componentSets":  {
+                                       "53:138":  {
+                                                      "key":  "e098805c9e6db6bfa6a87de61a8324a545d42501",
+                                                      "name":  "Icon Button",
+                                                      "description":  "Keywords: action",
+                                                      "remote":  true
+                                                  },
+                                       "53:242":  {
+                                                      "key":  "559730ecef10b32dc5fb5bd08c997c4f46e42ac8",
+                                                      "name":  "Calendar Button",
+                                                      "description":  "",
+                                                      "remote":  true
+                                                  },
+                                       "31:109":  {
+                                                      "key":  "96cd9d5a57578e32476d294473edfb9ade9365a3",
+                                                      "name":  "Avatar",
+                                                      "description":  "Initials should be single e.g. A, B, or C, and not multiple e.g. AA, BB, or CC.\n\nThis is because the widths of the avatars would force the text to overflow outside.",
+                                                      "remote":  true
+                                                  },
+                                       "38:616":  {
+                                                      "key":  "7e7009939587a0c2a87c887b26b38aabe6bd7061",
+                                                      "name":  "Credit card",
+                                                      "description":  "Keywords: purchase, payment, cc",
+                                                      "remote":  true
+                                                  },
+                                       "31:60":  {
+                                                     "key":  "e708a3f2e61ae762edd7e8b6b93ebe18b88f99b6",
+                                                     "name":  "Align left",
+                                                     "description":  "Keywords: text alignment, left",
+                                                     "remote":  true
+                                                 },
+                                       "38:448":  {
+                                                      "key":  "075881d3daeb513123e2f481375eb34a8a5be0f4",
+                                                      "name":  "Scissors",
+                                                      "description":  "Keywords: cut",
+                                                      "remote":  true
+                                                  },
+                                       "38:464":  {
+                                                      "key":  "0975c494671b52ef6cfde6aa95cb9364f07c6709",
+                                                      "name":  "Bell",
+                                                      "description":  "Keywords: alarm, notification, sound",
+                                                      "remote":  true
+                                                  },
+                                       "38:480":  {
+                                                      "key":  "5a955bcd856d34896c1c5e271e4694d5f1e0c15c",
+                                                      "name":  "User",
+                                                      "description":  "Keywords: person, account",
+                                                      "remote":  true
+                                                  },
+                                       "19:149":  {
+                                                      "key":  "a1d838f777321330dfe9000c042f123c3402475b",
+                                                      "name":  "UserCheck",
+                                                      "description":  "*new*, person, users, profile, account, contact, login, verified, people",
+                                                      "remote":  true
+                                                  },
+                                       "19:198":  {
+                                                      "key":  "5ee86b2fc4ed0d9c0af41f52e89baf9ad33fb2b7",
+                                                      "name":  "WebcamSlash",
+                                                      "description":  "camera, video conference, media",
+                                                      "remote":  true
+                                                  },
+                                       "31:144":  {
+                                                      "key":  "968327fbb0fbc4e4190051bd6f8d2ef3b54af42b",
+                                                      "name":  "Layers",
+                                                      "description":  "Keywords: stack",
+                                                      "remote":  true
+                                                  },
+                                       "31:230":  {
+                                                      "key":  "505ca235d04ffc31743805e2278802d0ac24fbb5",
+                                                      "name":  "Cast",
+                                                      "description":  "Keywords: chromecast, airplay",
+                                                      "remote":  true
+                                                  },
+                                       "38:39":  {
+                                                     "key":  "40415824de44635f1b71b94bb6a7875aa53ee41c",
+                                                     "name":  "Search",
+                                                     "description":  "Keywords: find, magnifier, magnifying glass",
+                                                     "remote":  true
+                                                 },
+                                       "38:57":  {
+                                                     "key":  "91db3465e17c1e27e81ea17725aa5889320c29fb",
+                                                     "name":  "Trending up",
+                                                     "description":  "",
+                                                     "remote":  true
+                                                 }
+                                   },
+                 "schemaVersion":  0,
+                 "styles":  {
+                                "31:102":  {
+                                               "key":  "cebee1b62ea594fa8f97b0b247fd163730736f2a",
+                                               "name":  "Body Base",
+                                               "styleType":  "TEXT",
+                                               "remote":  true,
+                                               "description":  ""
+                                           },
+                                "53:177":  {
+                                               "key":  "cd8fb7890d02bb365020e6d4d9dc37dd932bbf3b",
+                                               "name":  "Single Line/Body Base",
+                                               "styleType":  "TEXT",
+                                               "remote":  true,
+                                               "description":  "Used for any text element where you need 100% line height. For example, an input field, a label."
+                                           },
+                                "53:206":  {
+                                               "key":  "e21b16ffb31d9ee1ff2a4792765537ea77c7b80e",
+                                               "name":  "Body Strong",
+                                               "styleType":  "TEXT",
+                                               "remote":  true,
+                                               "description":  ""
+                                           },
+                                "53:185":  {
+                                               "key":  "6dc22e0ddb735b3b4fdf3afecd5762a1c9bc42ed",
+                                               "name":  "Drop Shadow/200",
+                                               "styleType":  "EFFECT",
+                                               "remote":  true,
+                                               "description":  ""
+                                           },
+                                "53:236":  {
+                                               "key":  "6a178a606cd12ec650bd0cdceeb5d22e0a709319",
+                                               "name":  "Text/Extra Small",
+                                               "styleType":  "TEXT",
+                                               "remote":  true,
+                                               "description":  ""
+                                           },
+                                "31:221":  {
+                                               "key":  "a7788e6e250068d8b385890b7ff827644c40a131",
+                                               "name":  "M3/sys/light/on-surface",
+                                               "styleType":  "FILL",
+                                               "remote":  true,
+                                               "description":  ""
+                                           },
+                                "19:148":  {
+                                               "key":  "3465ba1507dcfd30a8e6403ea28bb3f5641bf9ec",
+                                               "name":  "stone",
+                                               "styleType":  "FILL",
+                                               "remote":  true,
+                                               "description":  ""
+                                           }
+                            }
+             },
+    "12:4":  {
+                 "document":  {
+                                  "id":  "12:4",
+                                  "name":  "PANTALLAS SECUNDARIAS",
+                                  "type":  "SECTION",
+                                  "scrollBehavior":  "SCROLLS",
+                                  "children":  [
+
+                                               ],
+                                  "fills":  [
+                                                {
+                                                    "blendMode":  "NORMAL",
+                                                    "type":  "SOLID",
+                                                    "color":  "@{r=0.70673078298568726; g=0.70673078298568726; b=0.70673078298568726; a=1.0}"
+                                                }
+                                            ],
+                                  "strokes":  [
+                                                  {
+                                                      "opacity":  0.10000000149011612,
+                                                      "blendMode":  "NORMAL",
+                                                      "type":  "SOLID",
+                                                      "color":  "@{r=0.0; g=0.0; b=0.0; a=1.0}"
+                                                  }
+                                              ],
+                                  "strokeWeight":  1.0,
+                                  "strokeAlign":  "INSIDE",
+                                  "absoluteBoundingBox":  {
+                                                              "x":  4331.0,
+                                                              "y":  -204.0,
+                                                              "width":  4500.0,
+                                                              "height":  2500.0
+                                                          },
+                                  "absoluteRenderBounds":  {
+                                                               "x":  4331.0,
+                                                               "y":  -204.0,
+                                                               "width":  4500.0,
+                                                               "height":  2500.0
+                                                           },
+                                  "sectionContentsHidden":  false
+                              },
+                 "components":  {
+
+                                },
+                 "componentSets":  {
+
+                                   },
+                 "schemaVersion":  0,
+                 "styles":  {
+
+                            }
+             }
+}

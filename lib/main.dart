@@ -15,16 +15,16 @@ void main() async {
     anonKey: const String.fromEnvironment('SUPABASE_ANON_KEY'),
   );
 
-  runApp(const ProviderScope(child: SubScanApp()));
+  runApp(const ProviderScope(child: PodaApp()));
 }
 
-class SubScanApp extends StatelessWidget {
-  const SubScanApp({super.key});
+class PodaApp extends StatelessWidget {
+  const PodaApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'SubScan',
+      title: 'PODA',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       home: const OnboardingPage(),
