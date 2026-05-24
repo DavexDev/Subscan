@@ -2,10 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:subscan/core/theme/design_tokens.dart';
 import 'package:subscan/features/subscriptions/models/subscription.dart';
-import 'package:subscan/features/subscriptions/presentation/pages/add_subscription_page.dart';
 import 'package:subscan/features/subscriptions/providers/subscription_notifier_provider.dart';
 
-/// Pantalla de detalle completo de una suscripción.
+const Color _kBg = Color(0xFF030B3F);
+const Color _kCard = Color(0xFF3B4792);
+const Color _kGreen = Color(0xFF07D47B);
+const Color _kRed = Color(0xFFE5223A);
+
+/// Pantalla de detalle completo de una suscripción — diseño APPS dark theme.
 class SubscriptionDetailPage extends ConsumerWidget {
   final Subscription subscription;
 
@@ -13,7 +17,6 @@ class SubscriptionDetailPage extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    // Observar el estado actualizado para reflejar cambios (ej. renovación)
     final state = ref.watch(subscriptionNotifierProvider);
     final current = state.allSubscriptions.firstWhere(
       (s) => s.id == subscription.id,
@@ -21,19 +24,25 @@ class SubscriptionDetailPage extends ConsumerWidget {
     );
 
     return Scaffold(
+      backgroundColor: _kBg,
       body: CustomScrollView(
         slivers: [
-          _DetailAppBar(subscription: current),
+          _DarkDetailAppBar(subscription: current),
           SliverPadding(
-            padding: const EdgeInsets.all(DesignTokens.s16),
+            padding: const EdgeInsets.symmetric(horizontal: DesignTokens.s16),
             sliver: SliverList(
               delegate: SliverChildListDelegate([
-                _PriceCard(subscription: current),
                 const SizedBox(height: DesignTokens.s16),
-                _RenewalCard(subscription: current),
+                _AppHeaderRow(subscription: current),
                 const SizedBox(height: DesignTokens.s16),
-                _MetaCard(subscription: current),
-                const SizedBox(height: DesignTokens.s32),
+                _InfoColumnsCard(subscription: current),
+                const SizedBox(height: DesignTokens.s16),
+                _UsageCard(subscription: current),
+                const SizedBox(height: DesignTokens.s16),
+                _BenefitsCard(subscription: current),
+                const SizedBox(height: DesignTokens.s16),
+                _PaymentHistoryCard(subscription: current),
+                const SizedBox(height: DesignTokens.s24),
                 _RenewButton(
                   onRenew: () {
                     ref
@@ -51,29 +60,52 @@ class SubscriptionDetailPage extends ConsumerWidget {
                   },
                 ),
                 const SizedBox(height: DesignTokens.s12),
-                _DeleteButton(
+                _CancelButton(
                   onDelete: () async {
                     final confirm = await showDialog<bool>(
                       context: context,
                       builder: (_) => AlertDialog(
+                        backgroundColor: _kCard,
                         shape: RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(DesignTokens.rL),
+                          borderRadius: BorderRadius.circular(DesignTokens.rL),
                         ),
-                        title: const Text('Eliminar suscripción'),
-                        content:
-                            Text('¿Deseas eliminar "${current.nombre}"?'),
+                        title: const Text(
+                          'Eliminar suscripción',
+                          style: TextStyle(
+                            fontFamily: DesignTokens.fontFamily,
+                            color: Colors.white,
+                          ),
+                        ),
+                        content: Text(
+                          '¿Deseas eliminar "${current.nombre}"?',
+                          style: TextStyle(
+                            fontFamily: DesignTokens.fontFamily,
+                            color: Colors.white.withValues(alpha: 0.8),
+                          ),
+                        ),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(context, false),
-                            child: const Text('Cancelar'),
+                            child: const Text(
+                              'Cancelar',
+                              style: TextStyle(
+                                fontFamily: DesignTokens.fontFamily,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
                           ElevatedButton(
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: DesignTokens.error,
+                              backgroundColor: _kRed,
                             ),
                             onPressed: () => Navigator.pop(context, true),
-                            child: const Text('Eliminar'),
+                            child: const Text(
+                              'Eliminar',
+                              style: TextStyle(
+                                fontFamily: DesignTokens.fontFamily,
+                                color: Colors.white,
+                              ),
+                            ),
                           ),
                         ],
                       ),
@@ -98,388 +130,268 @@ class SubscriptionDetailPage extends ConsumerWidget {
 
 // ─── App Bar ─────────────────────────────────────────────────────────────────
 
-class _DetailAppBar extends StatelessWidget {
+class _DarkDetailAppBar extends StatelessWidget {
   final Subscription subscription;
-  const _DetailAppBar({required this.subscription});
-
-  void _openEdit(BuildContext context) {
-    Navigator.of(context).push(
-      PageRouteBuilder(
-        pageBuilder: (context, animation, _) =>
-            AddSubscriptionPage(subscription: subscription),
-        transitionsBuilder: (_, anim, _, child) =>
-            FadeTransition(opacity: anim, child: child),
-        transitionDuration: DesignTokens.animNormal,
-      ),
-    );
-  }
+  const _DarkDetailAppBar({required this.subscription});
 
   @override
   Widget build(BuildContext context) {
     return SliverAppBar(
-      expandedHeight: 160,
+      backgroundColor: _kBg,
+      elevation: 0,
       pinned: true,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new_rounded),
+        icon: const Icon(
+          Icons.arrow_back_ios_new_rounded,
+          color: Colors.white,
+        ),
         onPressed: () => Navigator.pop(context),
-        color: Colors.white,
       ),
       actions: [
-        IconButton(
-          tooltip: 'Editar',
-          icon: const Icon(Icons.edit_rounded, color: Colors.white),
-          onPressed: () => _openEdit(context),
+        CircleAvatar(
+          radius: 18,
+          backgroundColor: Colors.white.withValues(alpha: 0.15),
+          child: const Icon(Icons.person_rounded, color: Colors.white, size: 20),
         ),
-        const SizedBox(width: DesignTokens.s4),
+        const SizedBox(width: DesignTokens.s16),
       ],
-      flexibleSpace: FlexibleSpaceBar(
-        background: Container(
-          decoration: BoxDecoration(
-            gradient: subscription.isUrgent
-                ? DesignTokens.urgentGradient
-                : DesignTokens.headerGradient,
-          ),
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(
-                horizontal: DesignTokens.s24,
-                vertical: DesignTokens.s16,
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 52,
-                        height: 52,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.2),
-                          borderRadius:
-                              BorderRadius.circular(DesignTokens.rM),
-                        ),
-                        child: Center(
-                          child: Text(
-                            subscription.nombre.isEmpty
-                                ? '?'
-                                : subscription.nombre[0].toUpperCase(),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: DesignTokens.wBold,
-                              fontFamily: DesignTokens.fontFamily,
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: DesignTokens.s16),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              subscription.nombre,
-                              style: const TextStyle(
-                                fontFamily: DesignTokens.fontFamily,
-                                fontSize: 22,
-                                fontWeight: DesignTokens.wBold,
-                                color: Colors.white,
-                              ),
-                            ),
-                            Text(
-                              'Fuente: ${subscription.fuente}',
-                              style: TextStyle(
-                                fontFamily: DesignTokens.fontFamily,
-                                fontSize: 12,
-                                color: Colors.white.withValues(alpha: 0.75),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ),
-      ),
-      backgroundColor: DesignTokens.primary,
     );
   }
 }
 
-// ─── Cards de información ─────────────────────────────────────────────────────
+// ─── App Header Row ───────────────────────────────────────────────────────────
 
-class _InfoCard extends StatelessWidget {
-  final Widget child;
-  const _InfoCard({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(DesignTokens.s20),
-      decoration: BoxDecoration(
-        color: DesignTokens.surface,
-        borderRadius: BorderRadius.circular(DesignTokens.rL),
-        boxShadow: [
-          BoxShadow(
-            color: DesignTokens.primary.withValues(alpha: 0.06),
-            blurRadius: 10,
-            offset: const Offset(0, 3),
-          ),
-        ],
-      ),
-      child: child,
-    );
-  }
-}
-
-class _SectionTitle extends StatelessWidget {
-  final String text;
-  const _SectionTitle(this.text);
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: DesignTokens.s12),
-      child: Text(
-        text.toUpperCase(),
-        style: const TextStyle(
-          fontFamily: DesignTokens.fontFamily,
-          fontSize: 10,
-          fontWeight: DesignTokens.wBold,
-          color: DesignTokens.textSecondary,
-          letterSpacing: 1.2,
-        ),
-      ),
-    );
-  }
-}
-
-class _PriceCard extends StatelessWidget {
+class _AppHeaderRow extends StatelessWidget {
   final Subscription subscription;
-  const _PriceCard({required this.subscription});
+  const _AppHeaderRow({required this.subscription});
 
-  @override
-  Widget build(BuildContext context) {
-    return _InfoCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const _SectionTitle('Precio'),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.end,
-            children: [
-              Text(
-                '\$${subscription.precioActual.toStringAsFixed(2)}',
-                style: Theme.of(context).textTheme.displayLarge?.copyWith(
-                      color: DesignTokens.primary,
-                    ),
-              ),
-              const Padding(
-                padding: EdgeInsets.only(bottom: DesignTokens.s8),
-                child: Text(
-                  ' /mes',
-                  style: TextStyle(
-                    fontFamily: DesignTokens.fontFamily,
-                    fontSize: 16,
-                    color: DesignTokens.textSecondary,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          if (subscription.precioOriginal != null &&
-              subscription.precioOriginal != subscription.precioActual) ...[
-            const SizedBox(height: DesignTokens.s4),
-            Row(
-              children: [
-                const Icon(
-                  Icons.arrow_downward_rounded,
-                  size: 14,
-                  color: DesignTokens.success,
-                ),
-                const SizedBox(width: 4),
-                Text(
-                  'Precio original: \$${subscription.precioOriginal!.toStringAsFixed(2)}',
-                  style: const TextStyle(
-                    fontFamily: DesignTokens.fontFamily,
-                    fontSize: 12,
-                    color: DesignTokens.success,
-                    fontWeight: DesignTokens.wMedium,
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class _RenewalCard extends StatelessWidget {
-  final Subscription subscription;
-  const _RenewalCard({required this.subscription});
-
-  @override
-  Widget build(BuildContext context) {
-    final dias = subscription.diasRestantes;
-    final color = subscription.isUrgent
-        ? DesignTokens.error
-        : subscription.isNearRenewal
-            ? DesignTokens.warning
-            : DesignTokens.success;
-
-    return _InfoCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const _SectionTitle('Próxima renovación'),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    _formatDate(subscription.fechaRenovacion),
-                    style: Theme.of(context).textTheme.titleLarge,
-                  ),
-                  const SizedBox(height: DesignTokens.s4),
-                  Text(
-                    dias <= 0
-                        ? 'Vence hoy'
-                        : 'En $dias ${dias == 1 ? 'día' : 'días'}',
-                    style: TextStyle(
-                      fontFamily: DesignTokens.fontFamily,
-                      fontSize: 13,
-                      fontWeight: DesignTokens.wSemibold,
-                      color: color,
-                    ),
-                  ),
-                ],
-              ),
-              Container(
-                width: 56,
-                height: 56,
-                decoration: BoxDecoration(
-                  color: color.withValues(alpha: 0.1),
-                  shape: BoxShape.circle,
-                ),
-                child: Icon(
-                  subscription.isUrgent
-                      ? Icons.warning_amber_rounded
-                      : subscription.isNearRenewal
-                          ? Icons.access_time_rounded
-                          : Icons.check_circle_outline_rounded,
-                  color: color,
-                  size: 28,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: DesignTokens.s16),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(DesignTokens.rFull),
-            child: LinearProgressIndicator(
-              value: dias <= 0 ? 1.0 : (1.0 - (dias.clamp(0, 30) / 30.0)),
-              backgroundColor: color.withValues(alpha: 0.12),
-              valueColor: AlwaysStoppedAnimation<Color>(color),
-              minHeight: 6,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatDate(DateTime dt) {
-    const months = [
-      'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
-      'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',
+  Color get _iconBg {
+    final colors = [
+      const Color(0xFF7C3AED),
+      const Color(0xFF0582C3),
+      const Color(0xFFE5223A),
+      const Color(0xFF07D47B),
+      const Color(0xFFC39500),
+      const Color(0xFF1DB954),
+      const Color(0xFFFF5500),
     ];
-    return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
+    if (subscription.nombre.isEmpty) return colors[0];
+    return colors[subscription.nombre.codeUnitAt(0) % colors.length];
   }
-}
-
-class _MetaCard extends StatelessWidget {
-  final Subscription subscription;
-  const _MetaCard({required this.subscription});
-
-  @override
-  Widget build(BuildContext context) {
-    return _InfoCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const _SectionTitle('Información'),
-          _MetaRow(
-            icon: Icons.fingerprint_rounded,
-            label: 'ID',
-            value: subscription.id,
-          ),
-          const Divider(height: DesignTokens.s20),
-          _MetaRow(
-            icon: Icons.source_rounded,
-            label: 'Fuente',
-            value: subscription.fuente == 'gmail' ? 'Gmail' : 'Manual',
-          ),
-          const Divider(height: DesignTokens.s20),
-          _MetaRow(
-            icon: Icons.calendar_today_rounded,
-            label: 'Registrado',
-            value: _formatDate(subscription.createdAt),
-          ),
-        ],
-      ),
-    );
-  }
-
-  String _formatDate(DateTime dt) {
-    const months = [
-      'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
-      'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',
-    ];
-    return '${dt.day} ${months[dt.month - 1]} ${dt.year}';
-  }
-}
-
-class _MetaRow extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  const _MetaRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
 
   @override
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 18, color: DesignTokens.textSecondary),
+        Container(
+          width: 50,
+          height: 50,
+          decoration: BoxDecoration(
+            color: _iconBg,
+            shape: BoxShape.circle,
+          ),
+          child: Center(
+            child: Text(
+              subscription.nombre.isEmpty
+                  ? '?'
+                  : subscription.nombre[0].toUpperCase(),
+              style: const TextStyle(
+                fontFamily: DesignTokens.fontFamily,
+                fontSize: 22,
+                fontWeight: DesignTokens.wBold,
+                color: Colors.white,
+              ),
+            ),
+          ),
+        ),
         const SizedBox(width: DesignTokens.s12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                label,
-                style: Theme.of(context).textTheme.bodySmall,
+                subscription.nombre,
+                style: const TextStyle(
+                  fontFamily: DesignTokens.fontFamily,
+                  fontSize: 18,
+                  fontWeight: DesignTokens.wBold,
+                  color: Colors.white,
+                ),
               ),
-              Text(
-                value,
-                style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                      fontWeight: DesignTokens.wMedium,
-                    ),
+              const Text(
+                'Plan premium individual',
+                style: TextStyle(
+                  fontFamily: DesignTokens.fontFamily,
+                  fontSize: 12,
+                  color: Colors.white54,
+                ),
               ),
             ],
+          ),
+        ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              'Q${subscription.precioActual.toStringAsFixed(2)}',
+              style: const TextStyle(
+                fontFamily: DesignTokens.fontFamily,
+                fontSize: 18,
+                fontWeight: DesignTokens.wBold,
+                color: Colors.white,
+              ),
+            ),
+            const Text(
+              'Mensual',
+              style: TextStyle(
+                fontFamily: DesignTokens.fontFamily,
+                fontSize: 11,
+                color: Colors.white54,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+              decoration: BoxDecoration(
+                color: _kGreen.withValues(alpha: 0.2),
+                borderRadius: BorderRadius.circular(DesignTokens.rFull),
+                border: Border.all(color: _kGreen.withValues(alpha: 0.5)),
+              ),
+              child: const Text(
+                'ACTIVA',
+                style: TextStyle(
+                  fontFamily: DesignTokens.fontFamily,
+                  fontSize: 10,
+                  fontWeight: DesignTokens.wBold,
+                  color: _kGreen,
+                ),
+              ),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+// ─── Info Columns Card ────────────────────────────────────────────────────────
+
+class _InfoColumnsCard extends StatelessWidget {
+  final Subscription subscription;
+  const _InfoColumnsCard({required this.subscription});
+
+  static const List<String> _months = [
+    'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+    'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',
+  ];
+
+  String get _renewalDate {
+    final d = subscription.fechaRenovacion;
+    return '${d.day} ${_months[d.month - 1]} ${d.year}';
+  }
+
+  String get _daysLabel {
+    final dias = subscription.diasRestantes;
+    if (dias <= 0) return 'Hoy';
+    return 'En $dias días';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(DesignTokens.s16),
+      decoration: BoxDecoration(
+        color: _kCard,
+        borderRadius: BorderRadius.circular(DesignTokens.rL),
+      ),
+      child: IntrinsicHeight(
+        child: Row(
+          children: [
+            Expanded(
+              child: _InfoColumn(
+                icon: Icons.calendar_today_rounded,
+                topLabel: 'Próximo pago',
+                mainValue: _renewalDate,
+                mainColor: _kGreen,
+                bottomLabel: _daysLabel,
+              ),
+            ),
+            _VDiv(),
+            Expanded(
+              child: _InfoColumn(
+                icon: Icons.credit_card_rounded,
+                topLabel: 'Método de pago',
+                mainValue: 'Visa *****4521',
+                mainColor: Colors.white,
+                bottomLabel: 'Sin método alternativo',
+              ),
+            ),
+            _VDiv(),
+            Expanded(
+              child: _InfoColumn(
+                icon: Icons.autorenew_rounded,
+                topLabel: 'Renovación',
+                mainValue: 'Automática',
+                mainColor: _kGreen,
+                bottomLabel: 'Mensual',
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _InfoColumn extends StatelessWidget {
+  final IconData icon;
+  final String topLabel;
+  final String mainValue;
+  final Color mainColor;
+  final String bottomLabel;
+
+  const _InfoColumn({
+    required this.icon,
+    required this.topLabel,
+    required this.mainValue,
+    required this.mainColor,
+    required this.bottomLabel,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Icon(icon, color: Colors.white70, size: 20),
+        const SizedBox(height: 6),
+        Text(
+          topLabel,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontFamily: DesignTokens.fontFamily,
+            fontSize: 10,
+            color: Colors.white.withValues(alpha: 0.55),
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          mainValue,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontFamily: DesignTokens.fontFamily,
+            fontSize: 11,
+            fontWeight: DesignTokens.wSemibold,
+            color: mainColor,
+          ),
+        ),
+        const SizedBox(height: 2),
+        Text(
+          bottomLabel,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontFamily: DesignTokens.fontFamily,
+            fontSize: 10,
+            color: Colors.white.withValues(alpha: 0.45),
           ),
         ),
       ],
@@ -487,7 +399,264 @@ class _MetaRow extends StatelessWidget {
   }
 }
 
-// ─── Botones de acción ────────────────────────────────────────────────────────
+class _VDiv extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 1,
+      margin: const EdgeInsets.symmetric(horizontal: DesignTokens.s8),
+      color: Colors.white.withValues(alpha: 0.2),
+    );
+  }
+}
+
+// ─── Usage Card ───────────────────────────────────────────────────────────────
+
+class _UsageCard extends StatelessWidget {
+  final Subscription subscription;
+  const _UsageCard({required this.subscription});
+
+  int get _daysUsed {
+    final diff = DateTime.now().difference(subscription.createdAt).inDays;
+    return diff.clamp(0, 30);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final used = _daysUsed;
+    final progress = used / 30.0;
+
+    return Container(
+      padding: const EdgeInsets.all(DesignTokens.s16),
+      decoration: BoxDecoration(
+        color: _kCard,
+        borderRadius: BorderRadius.circular(DesignTokens.rL),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Uso de tu suscripción',
+            style: TextStyle(
+              fontFamily: DesignTokens.fontFamily,
+              fontSize: 15,
+              fontWeight: DesignTokens.wSemibold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: DesignTokens.s8),
+          Text(
+            'Has usado ${subscription.nombre} por $used días este ciclo.',
+            style: TextStyle(
+              fontFamily: DesignTokens.fontFamily,
+              fontSize: 13,
+              color: Colors.white.withValues(alpha: 0.7),
+            ),
+          ),
+          const SizedBox(height: DesignTokens.s12),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(DesignTokens.rFull),
+            child: LinearProgressIndicator(
+              value: progress.clamp(0.0, 1.0),
+              backgroundColor: Colors.white.withValues(alpha: 0.15),
+              valueColor: const AlwaysStoppedAnimation<Color>(_kGreen),
+              minHeight: 8,
+            ),
+          ),
+          const SizedBox(height: DesignTokens.s8),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '$used días usados',
+                style: const TextStyle(
+                  fontFamily: DesignTokens.fontFamily,
+                  fontSize: 12,
+                  fontWeight: DesignTokens.wMedium,
+                  color: _kGreen,
+                ),
+              ),
+              Text(
+                '30 días totales',
+                style: TextStyle(
+                  fontFamily: DesignTokens.fontFamily,
+                  fontSize: 12,
+                  color: Colors.white.withValues(alpha: 0.7),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Benefits Card ────────────────────────────────────────────────────────────
+
+class _BenefitsCard extends StatelessWidget {
+  final Subscription subscription;
+  const _BenefitsCard({required this.subscription});
+
+  static const List<String> _benefits = [
+    'Acceso ilimitado a contenido premium',
+    'Descarga para uso sin conexión',
+    'Calidad de audio/video en alta definición',
+    'Soporte prioritario al cliente',
+    'Sin anuncios durante la experiencia',
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(DesignTokens.s16),
+      decoration: BoxDecoration(
+        color: _kCard,
+        borderRadius: BorderRadius.circular(DesignTokens.rL),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Beneficios de tu plan',
+            style: TextStyle(
+              fontFamily: DesignTokens.fontFamily,
+              fontSize: 15,
+              fontWeight: DesignTokens.wSemibold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: DesignTokens.s12),
+          ..._benefits.map(
+            (b) => Padding(
+              padding: const EdgeInsets.only(bottom: DesignTokens.s8),
+              child: Row(
+                children: [
+                  const Icon(
+                    Icons.check_circle_rounded,
+                    color: _kGreen,
+                    size: 18,
+                  ),
+                  const SizedBox(width: DesignTokens.s8),
+                  Expanded(
+                    child: Text(
+                      b,
+                      style: TextStyle(
+                        fontFamily: DesignTokens.fontFamily,
+                        fontSize: 13,
+                        color: Colors.white.withValues(alpha: 0.85),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Payment History Card ─────────────────────────────────────────────────────
+
+class _PaymentHistoryCard extends StatelessWidget {
+  final Subscription subscription;
+  const _PaymentHistoryCard({required this.subscription});
+
+  @override
+  Widget build(BuildContext context) {
+    final base = subscription.precioActual;
+    final months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul'];
+    final values = [
+      base * 0.95,
+      base * 1.0,
+      base * 0.95,
+      base * 1.05,
+      base * 1.0,
+      base * 0.95,
+      base * 1.0,
+    ];
+    final maxVal = values.reduce((a, b) => a > b ? a : b);
+    final avg = values.fold<double>(0, (s, v) => s + v) / values.length;
+
+    return Container(
+      padding: const EdgeInsets.all(DesignTokens.s16),
+      decoration: BoxDecoration(
+        color: _kCard,
+        borderRadius: BorderRadius.circular(DesignTokens.rL),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              const Text(
+                'Historial de pagos',
+                style: TextStyle(
+                  fontFamily: DesignTokens.fontFamily,
+                  fontSize: 15,
+                  fontWeight: DesignTokens.wSemibold,
+                  color: Colors.white,
+                ),
+              ),
+              Text(
+                'Promedio Q${avg.toStringAsFixed(2)}/mes',
+                style: TextStyle(
+                  fontFamily: DesignTokens.fontFamily,
+                  fontSize: 11,
+                  color: Colors.white.withValues(alpha: 0.6),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: DesignTokens.s16),
+          SizedBox(
+            height: 100,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: List.generate(7, (i) {
+                final ratio = maxVal == 0 ? 0.0 : values[i] / maxVal;
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    Flexible(
+                      child: FractionallySizedBox(
+                        heightFactor: ratio.clamp(0.1, 1.0),
+                        child: Container(
+                          width: 28,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF282743),
+                            borderRadius: const BorderRadius.vertical(
+                              top: Radius.circular(DesignTokens.rXS),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      months[i],
+                      style: TextStyle(
+                        fontFamily: DesignTokens.fontFamily,
+                        fontSize: 10,
+                        color: Colors.white.withValues(alpha: 0.6),
+                      ),
+                    ),
+                  ],
+                );
+              }),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Botones ──────────────────────────────────────────────────────────────────
 
 class _RenewButton extends StatelessWidget {
   final VoidCallback onRenew;
@@ -500,13 +669,21 @@ class _RenewButton extends StatelessWidget {
       height: 52,
       child: ElevatedButton.icon(
         onPressed: onRenew,
-        icon: const Icon(Icons.check_circle_outline_rounded),
-        label: const Text('Renovar suscripción'),
-        style: ElevatedButton.styleFrom(
-          textStyle: const TextStyle(
+        icon: const Icon(Icons.autorenew_rounded, color: Colors.white),
+        label: const Text(
+          'Renovar suscripción',
+          style: TextStyle(
             fontFamily: DesignTokens.fontFamily,
-            fontSize: 16,
+            fontSize: 15,
             fontWeight: DesignTokens.wSemibold,
+            color: Colors.white,
+          ),
+        ),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: DesignTokens.primary,
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(DesignTokens.rL),
           ),
         ),
       ),
@@ -514,28 +691,32 @@ class _RenewButton extends StatelessWidget {
   }
 }
 
-class _DeleteButton extends StatelessWidget {
+class _CancelButton extends StatelessWidget {
   final VoidCallback onDelete;
-  const _DeleteButton({required this.onDelete});
+  const _CancelButton({required this.onDelete});
 
   @override
   Widget build(BuildContext context) {
     return SizedBox(
       width: double.infinity,
       height: 52,
-      child: OutlinedButton.icon(
+      child: ElevatedButton(
         onPressed: onDelete,
-        icon: const Icon(Icons.delete_outline_rounded, color: DesignTokens.error),
-        label: const Text(
-          'Eliminar suscripción',
-          style: TextStyle(color: DesignTokens.error),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: const Color(0xFFC50000),
+          elevation: 0,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(DesignTokens.rL),
+          ),
         ),
-        style: OutlinedButton.styleFrom(
-          side: const BorderSide(color: DesignTokens.error),
-          textStyle: const TextStyle(
+        child: const Text(
+          'CANCELAR SUSCRIPCIÓN',
+          style: TextStyle(
             fontFamily: DesignTokens.fontFamily,
-            fontSize: 16,
-            fontWeight: DesignTokens.wSemibold,
+            fontSize: 15,
+            fontWeight: DesignTokens.wBold,
+            color: Colors.white,
+            letterSpacing: 0.5,
           ),
         ),
       ),

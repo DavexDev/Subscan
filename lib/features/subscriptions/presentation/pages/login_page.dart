@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:subscan/core/theme/design_tokens.dart';
 import 'package:subscan/features/auth/auth_provider.dart';
-import 'package:subscan/features/subscriptions/presentation/pages/dashboard_page.dart';
+import 'package:subscan/features/subscriptions/presentation/pages/main_shell.dart';
 
 /// Pantalla de inicio / login de SubScan.
 class LoginPage extends ConsumerStatefulWidget {
@@ -46,7 +46,7 @@ class _LoginPageState extends ConsumerState<LoginPage>
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) =>
-            const DashboardPage(),
+            const MainShell(),
         transitionsBuilder: (_, anim, _, child) =>
             FadeTransition(opacity: anim, child: child),
         transitionDuration: DesignTokens.animNormal,
