@@ -1,5 +1,6 @@
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:subscan/core/theme/app_theme.dart';
@@ -8,11 +9,26 @@ import 'package:subscan/features/onboarding/presentation/pages/onboarding_page.d
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Carga las credenciales privadas desde .env (ver .env.example).
+  await dotenv.load(fileName: '.env');
+
+  final supabaseUrl = dotenv.env['SUPABASE_URL'];
+  final supabaseAnonKey = dotenv.env['SUPABASE_ANON_KEY'];
+  if (supabaseUrl == null ||
+      supabaseUrl.isEmpty ||
+      supabaseAnonKey == null ||
+      supabaseAnonKey.isEmpty) {
+    throw Exception(
+      'Faltan SUPABASE_URL / SUPABASE_ANON_KEY en .env. '
+      'Copia .env.example a .env y rellena los valores reales.',
+    );
+  }
+
   await Firebase.initializeApp();
 
   await Supabase.initialize(
-    url: const String.fromEnvironment('SUPABASE_URL'),
-    anonKey: const String.fromEnvironment('SUPABASE_ANON_KEY'),
+    url: supabaseUrl,
+    anonKey: supabaseAnonKey,
   );
 
   runApp(const ProviderScope(child: PodaApp()));
