@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:subscan/core/theme/design_tokens.dart';
+import 'package:subscan/features/subscriptions/models/subscription.dart';
+import 'package:subscan/features/subscriptions/presentation/notifiers/subscription_notifier.dart';
+import 'package:subscan/features/subscriptions/providers/subscription_notifier_provider.dart';
 
 const Color _kBg = Color(0xFF030B3F);
 const Color _kCard = Color(0xFF3B4792);
@@ -8,11 +12,30 @@ const Color _kCardDark = Color(0xFF0F1F70);
 // Badge colors
 const Color _kBadgeRed = Color(0xFFC30000);
 const Color _kBadgeOrange = Color(0xFFC39500);
-const Color _kBadgeBlue = Color(0xFF0082C3);
-const Color _kBadgeGreen = Color(0xFF35E026);
-const Color _kBadgeBlueAlt = Color(0xFF0564AA);
 
-/// Modelo interno de alerta
+// Paleta de colores para iconos (determinista por nombre)
+const List<Color> _kIconPalette = [
+  Color(0xFFE5223A),
+  Color(0xFF1DB954),
+  Color(0xFF0F3FA2),
+  Color(0xFFFF5500),
+  Color(0xFF5822CC),
+  Color(0xFF00C4CC),
+  Color(0xFFFF0000),
+];
+
+const List<String> _kMonths = [
+  'Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun',
+  'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic',
+];
+
+Color _iconColorFor(String name) =>
+    _kIconPalette[name.isEmpty ? 0 : name.codeUnitAt(0) % _kIconPalette.length];
+
+String _fmtDate(DateTime d) => '${d.day} de ${_kMonths[d.month - 1]}';
+
+// ─── Modelos internos de alerta ───────────────────────────────────────────────
+
 class _AlertItem {
   final String app;
   final String title;
@@ -33,7 +56,6 @@ class _AlertItem {
   });
 }
 
-/// Grupo de alertas por fecha
 class _AlertGroup {
   final String dateHeader;
   final List<_AlertItem> items;
@@ -41,112 +63,93 @@ class _AlertGroup {
   const _AlertGroup({required this.dateHeader, required this.items});
 }
 
-final List<_AlertGroup> _mockGroups = [
-  _AlertGroup(
-    dateHeader: 'Hoy • Mar 9 de Mayo',
-    items: [
-      _AlertItem(
-        app: 'Netflix',
-        title: 'Netflix Aumentará de precio',
-        subtitle: 'A partir del 20 de mayo pagarás Q109.00/mes',
-        badge: 'Importante',
-        badgeColor: _kBadgeRed,
-        time: '9:41 AM',
-        iconColor: Color(0xFFE5223A),
-      ),
-      _AlertItem(
-        app: 'Spotify',
-        title: 'Spotify vence en 3 días',
-        subtitle: 'Tu pago de Q37.57 se procesará el 13 de Mayo',
-        badge: 'Próximo pago',
-        badgeColor: _kBadgeOrange,
-        time: '10:54 AM',
-        iconColor: Color(0xFF1DB954),
-      ),
-      _AlertItem(
-        app: 'Disney+',
-        title: 'No has usado Disney+ este mes',
-        subtitle: 'PODA detectó que no la has usado recientemente',
-        badge: 'Recomendación',
-        badgeColor: _kBadgeBlue,
-        time: '11:24 AM',
-        iconColor: Color(0xFF0F3FA2),
-      ),
-    ],
-  ),
-  _AlertGroup(
-    dateHeader: 'Ayer • Mar 6 de Mayo',
-    items: [
-      _AlertItem(
-        app: 'Soundcloud',
-        title: 'Pago Exitoso',
-        subtitle: 'Se realizó el pago de Q25.00 correctamente',
-        badge: 'Completado',
-        badgeColor: _kBadgeGreen,
-        time: '9:34 PM',
-        iconColor: Color(0xFFFF5500),
-      ),
-      _AlertItem(
-        app: 'HBO MAX',
-        title: 'Nuevo plan disponible',
-        subtitle: 'HBO MAX tiene un plan más económico',
-        badge: 'Información',
-        badgeColor: _kBadgeBlueAlt,
-        time: '9:34 PM',
-        iconColor: Color(0xFF5822CC),
-      ),
-    ],
-  ),
-  _AlertGroup(
-    dateHeader: 'Esta semana • Mié 2 de Mayo',
-    items: [
-      _AlertItem(
-        app: 'Adobe',
-        title: 'Adobe Acrobat Vence en 5 días',
-        subtitle: 'Tu pago de Q67.99 se procesará el 7 de Mayo',
-        badge: 'Próximo pago',
-        badgeColor: _kBadgeOrange,
-        time: '9:34 PM',
-        iconColor: Color(0xFFFF0000),
-      ),
-      _AlertItem(
-        app: 'Canva',
-        title: 'Tu cuenta de Canva Pro vence pronto',
-        subtitle: 'Tu pago de Q200.87 se procesará el 15 de Mayo',
-        badge: 'Próximo pago',
-        badgeColor: _kBadgeOrange,
-        time: '9:34 PM',
-        iconColor: Color(0xFF00C4CC),
-      ),
-    ],
-  ),
-];
+// ─── Derivación de alertas desde el estado real ───────────────────────────────
 
-/// Pantalla de alertas.
-class AlertasPage extends StatefulWidget {
+_AlertItem _toPaymentAlert(Subscription s) {
+  final dias = s.diasRestantes;
+  final isUrgent = dias <= 1;
+  final title = dias <= 0
+      ? '${s.nombre} vence hoy'
+      : dias == 1
+          ? '${s.nombre} vence mañana'
+          : '${s.nombre} vence en $dias días';
+  return _AlertItem(
+    app: s.nombre,
+    title: title,
+    subtitle:
+        'Tu pago de Q${s.precioActual.toStringAsFixed(2)} se procesará el ${_fmtDate(s.fechaRenovacion)}',
+    badge: isUrgent ? 'Urgente' : 'Próximo pago',
+    badgeColor: isUrgent ? _kBadgeRed : _kBadgeOrange,
+    time: _fmtDate(s.fechaRenovacion),
+    iconColor: _iconColorFor(s.nombre),
+  );
+}
+
+_AlertItem _toPriceAlert(Subscription s) {
+  return _AlertItem(
+    app: s.nombre,
+    title: '${s.nombre} aumentará de precio',
+    subtitle:
+        'La tarifa regular es Q${s.precioOriginal!.toStringAsFixed(2)}/mes. '
+        'Actualmente pagas Q${s.precioActual.toStringAsFixed(2)}/mes.',
+    badge: 'Importante',
+    badgeColor: _kBadgeRed,
+    time: _fmtDate(s.fechaRenovacion),
+    iconColor: _iconColorFor(s.nombre),
+  );
+}
+
+List<_AlertGroup> _buildGroups(SubscriptionState state) {
+  final groups = <_AlertGroup>[];
+
+  // Próximos pagos: urgentes (≤3 días) + próximas (4–7 días)
+  final pagos = [
+    ...state.urgentes.map(_toPaymentAlert),
+    ...state.proximas.map(_toPaymentAlert),
+  ];
+  if (pagos.isNotEmpty) {
+    groups.add(_AlertGroup(dateHeader: 'Próximos pagos', items: pagos));
+  }
+
+  // Aumentos de precio: precioOriginal != null && precioOriginal > precioActual
+  final aumentos = state.allSubscriptions
+      .where((s) => s.precioOriginal != null && s.precioOriginal! > s.precioActual)
+      .map(_toPriceAlert)
+      .toList();
+  if (aumentos.isNotEmpty) {
+    groups.add(_AlertGroup(dateHeader: 'Aumentos de precio', items: aumentos));
+  }
+
+  return groups;
+}
+
+// ─── Pantalla de alertas ──────────────────────────────────────────────────────
+
+class AlertasPage extends ConsumerStatefulWidget {
   const AlertasPage({super.key});
 
   @override
-  State<AlertasPage> createState() => _AlertasPageState();
+  ConsumerState<AlertasPage> createState() => _AlertasPageState();
 }
 
-class _AlertasPageState extends State<AlertasPage> {
+class _AlertasPageState extends ConsumerState<AlertasPage> {
   int _selectedFilter = 0;
 
-  List<_AlertGroup> get _filteredGroups {
-    if (_selectedFilter == 0) return _mockGroups;
+  List<_AlertGroup> _applyFilter(List<_AlertGroup> groups) {
+    if (_selectedFilter == 0) return groups;
     if (_selectedFilter == 1) {
-      return _mockGroups.map((g) {
+      // Importantes: Urgente + Importante
+      return groups.map((g) {
         final filtered = g.items
-            .where((i) => i.badge == 'Importante')
+            .where((i) => i.badge == 'Importante' || i.badge == 'Urgente')
             .toList();
         return _AlertGroup(dateHeader: g.dateHeader, items: filtered);
       }).where((g) => g.items.isNotEmpty).toList();
     }
-    // Pagos
-    return _mockGroups.map((g) {
+    // Pagos: Próximo pago + Urgente
+    return groups.map((g) {
       final filtered = g.items
-          .where((i) => i.badge == 'Próximo pago' || i.badge == 'Completado')
+          .where((i) => i.badge == 'Próximo pago' || i.badge == 'Urgente')
           .toList();
       return _AlertGroup(dateHeader: g.dateHeader, items: filtered);
     }).where((g) => g.items.isNotEmpty).toList();
@@ -154,6 +157,20 @@ class _AlertasPageState extends State<AlertasPage> {
 
   @override
   Widget build(BuildContext context) {
+    final state = ref.watch(subscriptionNotifierProvider);
+    final allGroups = _buildGroups(state);
+    final filteredGroups = _applyFilter(allGroups);
+
+    final totalAlertas =
+        allGroups.fold<int>(0, (sum, g) => sum + g.items.length);
+    final requierenAtencion = allGroups.fold<int>(
+      0,
+      (sum, g) => sum +
+          g.items
+              .where((i) => i.badge == 'Importante' || i.badge == 'Urgente')
+              .length,
+    );
+
     return Scaffold(
       backgroundColor: _kBg,
       appBar: AppBar(
@@ -190,24 +207,36 @@ class _AlertasPageState extends State<AlertasPage> {
           ),
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.only(
-          left: DesignTokens.s16,
-          right: DesignTokens.s16,
-          top: DesignTokens.s8,
-          bottom: DesignTokens.s80,
-        ),
-        children: [
-          _SummaryCard(),
-          const SizedBox(height: DesignTokens.s16),
-          _FilterRow(
-            selected: _selectedFilter,
-            onSelect: (i) => setState(() => _selectedFilter = i),
-          ),
-          const SizedBox(height: DesignTokens.s16),
-          ..._filteredGroups.map((group) => _AlertGroupSection(group: group)),
-        ],
-      ),
+      body: state.isLoading
+          ? const Center(
+              child: CircularProgressIndicator(color: DesignTokens.primary),
+            )
+          : ListView(
+              padding: const EdgeInsets.only(
+                left: DesignTokens.s16,
+                right: DesignTokens.s16,
+                top: DesignTokens.s8,
+                bottom: DesignTokens.s80,
+              ),
+              children: [
+                _SummaryCard(
+                  total: totalAlertas,
+                  requierenAtencion: requierenAtencion,
+                ),
+                const SizedBox(height: DesignTokens.s16),
+                _FilterRow(
+                  selected: _selectedFilter,
+                  onSelect: (i) => setState(() => _selectedFilter = i),
+                ),
+                const SizedBox(height: DesignTokens.s16),
+                if (filteredGroups.isEmpty)
+                  const _EmptyAlerts()
+                else
+                  ...filteredGroups.map(
+                    (group) => _AlertGroupSection(group: group),
+                  ),
+              ],
+            ),
     );
   }
 }
@@ -215,6 +244,11 @@ class _AlertasPageState extends State<AlertasPage> {
 // ─── Summary Card ─────────────────────────────────────────────────────────────
 
 class _SummaryCard extends StatelessWidget {
+  final int total;
+  final int requierenAtencion;
+
+  const _SummaryCard({required this.total, required this.requierenAtencion});
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -253,25 +287,60 @@ class _SummaryCard extends StatelessWidget {
                   ),
                 ),
                 const SizedBox(height: 4),
-                const Text(
-                  '5 nuevas alertas',
-                  style: TextStyle(
+                Text(
+                  total == 0
+                      ? 'Sin alertas activas'
+                      : '$total ${total == 1 ? 'alerta activa' : 'alertas activas'}',
+                  style: const TextStyle(
                     fontFamily: DesignTokens.fontFamily,
                     fontSize: 13,
                     color: Colors.white,
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  '3 Requieren atención',
-                  style: TextStyle(
-                    fontFamily: DesignTokens.fontFamily,
-                    fontSize: 12,
-                    color: Colors.red.shade300,
-                    fontWeight: DesignTokens.wMedium,
+                if (requierenAtencion > 0) ...[
+                  const SizedBox(height: 2),
+                  Text(
+                    '$requierenAtencion ${requierenAtencion == 1 ? 'requiere' : 'requieren'} atención',
+                    style: TextStyle(
+                      fontFamily: DesignTokens.fontFamily,
+                      fontSize: 12,
+                      color: Colors.red.shade300,
+                      fontWeight: DesignTokens.wMedium,
+                    ),
                   ),
-                ),
+                ],
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Empty State ──────────────────────────────────────────────────────────────
+
+class _EmptyAlerts extends StatelessWidget {
+  const _EmptyAlerts();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: DesignTokens.s80),
+      child: Column(
+        children: [
+          Icon(
+            Icons.notifications_none_rounded,
+            size: 56,
+            color: Colors.white.withValues(alpha: 0.3),
+          ),
+          const SizedBox(height: DesignTokens.s16),
+          Text(
+            'No tienes alertas por ahora',
+            style: TextStyle(
+              fontFamily: DesignTokens.fontFamily,
+              fontSize: 15,
+              color: Colors.white.withValues(alpha: 0.5),
             ),
           ),
         ],
@@ -295,7 +364,9 @@ class _FilterRow extends StatelessWidget {
       children: List.generate(_labels.length, (i) {
         final isSelected = i == selected;
         return Padding(
-          padding: EdgeInsets.only(right: i < _labels.length - 1 ? DesignTokens.s8 : 0),
+          padding: EdgeInsets.only(
+            right: i < _labels.length - 1 ? DesignTokens.s8 : 0,
+          ),
           child: GestureDetector(
             onTap: () => onSelect(i),
             child: AnimatedContainer(
@@ -323,10 +394,8 @@ class _FilterRow extends StatelessWidget {
                       width: 8,
                       height: 8,
                       margin: const EdgeInsets.only(right: 6),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? const Color(0xFF0082C3)
-                            : const Color(0xFF0082C3),
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF0082C3),
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -337,7 +406,8 @@ class _FilterRow extends StatelessWidget {
                       fontFamily: DesignTokens.fontFamily,
                       fontSize: 13,
                       fontWeight: DesignTokens.wMedium,
-                      color: isSelected ? const Color(0xFF030B3F) : Colors.white,
+                      color:
+                          isSelected ? const Color(0xFF030B3F) : Colors.white,
                     ),
                   ),
                 ],
@@ -408,7 +478,7 @@ class _AlertRow extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // App icon
+              // Icono de app
               Container(
                 width: 40,
                 height: 40,
@@ -429,7 +499,7 @@ class _AlertRow extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: DesignTokens.s12),
-              // Content
+              // Contenido
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
