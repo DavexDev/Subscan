@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:subscan/core/theme/design_tokens.dart';
 import 'package:subscan/features/subscriptions/models/subscription.dart';
+import 'package:subscan/features/subscriptions/presentation/pages/add_subscription_page.dart';
 import 'package:subscan/features/subscriptions/providers/subscription_notifier_provider.dart';
 
 /// Pantalla de detalle completo de una suscripción.
@@ -101,6 +102,18 @@ class _DetailAppBar extends StatelessWidget {
   final Subscription subscription;
   const _DetailAppBar({required this.subscription});
 
+  void _openEdit(BuildContext context) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, _) =>
+            AddSubscriptionPage(subscription: subscription),
+        transitionsBuilder: (_, anim, _, child) =>
+            FadeTransition(opacity: anim, child: child),
+        transitionDuration: DesignTokens.animNormal,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return SliverAppBar(
@@ -111,6 +124,14 @@ class _DetailAppBar extends StatelessWidget {
         onPressed: () => Navigator.pop(context),
         color: Colors.white,
       ),
+      actions: [
+        IconButton(
+          tooltip: 'Editar',
+          icon: const Icon(Icons.edit_rounded, color: Colors.white),
+          onPressed: () => _openEdit(context),
+        ),
+        const SizedBox(width: DesignTokens.s4),
+      ],
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
           decoration: BoxDecoration(

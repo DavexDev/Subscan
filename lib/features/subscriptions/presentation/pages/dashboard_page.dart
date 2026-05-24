@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:subscan/core/theme/design_tokens.dart';
 import 'package:subscan/features/subscriptions/models/subscription.dart';
 import 'package:subscan/features/subscriptions/presentation/notifiers/subscription_notifier.dart';
+import 'package:subscan/features/subscriptions/presentation/pages/add_subscription_page.dart';
 import 'package:subscan/features/subscriptions/presentation/pages/subscription_detail_page.dart';
 import 'package:subscan/features/subscriptions/presentation/widgets/subscription_card.dart';
 import 'package:subscan/features/subscriptions/presentation/widgets/urgent_banner.dart';
@@ -75,11 +76,39 @@ class DashboardPage extends ConsumerWidget {
             ),
         ],
       ),
-      floatingActionButton: _RefreshFAB(
-        onRefresh: () =>
-            ref.read(subscriptionNotifierProvider.notifier).loadSubscriptions(),
+      floatingActionButton: _DashboardFABs(
+        onAdd: () => _openAdd(context, ref),
+        onSyncGmail: () => _syncGmail(context, ref),
       ),
     );
+  }
+
+  void _openAdd(BuildContext context, WidgetRef ref) {
+    Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, _) =>
+            const AddSubscriptionPage(),
+        transitionsBuilder: (_, anim, _, child) =>
+            FadeTransition(opacity: anim, child: child),
+        transitionDuration: DesignTokens.animNormal,
+      ),
+    );
+  }
+
+  Future<void> _syncGmail(BuildContext context, WidgetRef ref) async {
+    await ref.read(subscriptionNotifierProvider.notifier).syncGmail();
+    if (context.mounted) {
+      final error = ref.read(subscriptionNotifierProvider).error;
+      if (error == null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Gmail sincronizado ✅'),
+            backgroundColor: DesignTokens.success,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    }
   }
 
   void _openDetail(BuildContext context, Subscription sub) {
@@ -132,12 +161,12 @@ class DashboardPage extends ConsumerWidget {
 
 // ─── Sliver App Bar ──────────────────────────────────────────────────────────
 
-class _DashboardAppBar extends StatelessWidget {
+class _DashboardAppBar extends ConsumerWidget {
   final SubscriptionState state;
   const _DashboardAppBar({required this.state});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final total = state.allSubscriptions.fold<double>(
       0,
       (sum, s) => sum + s.precioActual,
@@ -146,9 +175,58 @@ class _DashboardAppBar extends StatelessWidget {
     return SliverAppBar(
       expandedHeight: 180,
       pinned: true,
+      actions: [
+        // Sincronizar Gmail
+        IconButton(
+          tooltip: 'Sincronizar Gmail',
+          icon: const Icon(Icons.email_outlined, color: Colors.white),
+          onPressed: state.isLoading
+              ? null
+              : () async {
+                  await ref
+                      .read(subscriptionNotifierProvider.notifier)
+                      .syncGmail();
+                  if (context.mounted) {
+                    final err =
+                        ref.read(subscriptionNotifierProvider).error;
+                    if (err == null) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Gmail sincronizado ✅'),
+                          backgroundColor: DesignTokens.success,
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    }
+                  }
+                },
+        ),
+        // Actualizar / refresh
+        IconButton(
+          tooltip: 'Actualizar',
+          icon: state.isLoading
+              ? const SizedBox(
+                  width: 18,
+                  height: 18,
+                  child: CircularProgressIndicator(
+                    strokeWidth: 2,
+                    valueColor:
+                        AlwaysStoppedAnimation<Color>(Colors.white),
+                  ),
+                )
+              : const Icon(Icons.refresh_rounded, color: Colors.white),
+          onPressed: state.isLoading
+              ? null
+              : () => ref
+                  .read(subscriptionNotifierProvider.notifier)
+                  .loadSubscriptions(),
+        ),
+        const SizedBox(width: DesignTokens.s4),
+      ],
       flexibleSpace: FlexibleSpaceBar(
         background: Container(
-          decoration: const BoxDecoration(gradient: DesignTokens.headerGradient),
+          decoration: const BoxDecoration(
+              gradient: DesignTokens.headerGradient),
           child: SafeArea(
             child: Padding(
               padding: const EdgeInsets.symmetric(
@@ -293,28 +371,51 @@ class _EmptyState extends StatelessWidget {
   }
 }
 
-// ─── FAB ─────────────────────────────────────────────────────────────────────
+// ─── FABs ─────────────────────────────────────────────────────────────────────
 
-class _RefreshFAB extends StatelessWidget {
-  final VoidCallback onRefresh;
-  const _RefreshFAB({required this.onRefresh});
+class _DashboardFABs extends StatelessWidget {
+  final VoidCallback onAdd;
+  final VoidCallback onSyncGmail;
+
+  const _DashboardFABs({
+    required this.onAdd,
+    required this.onSyncGmail,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return FloatingActionButton.extended(
-      onPressed: onRefresh,
-      backgroundColor: DesignTokens.primary,
-      foregroundColor: Colors.white,
-      icon: const Icon(Icons.refresh_rounded),
-      label: const Text(
-        'Actualizar',
-        style: TextStyle(
-          fontFamily: DesignTokens.fontFamily,
-          fontWeight: DesignTokens.wSemibold,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        // FAB secundario — Gmail sync
+        FloatingActionButton.small(
+          heroTag: 'fab_gmail',
+          onPressed: onSyncGmail,
+          backgroundColor: DesignTokens.surface,
+          foregroundColor: DesignTokens.primary,
+          tooltip: 'Sincronizar Gmail',
+          elevation: DesignTokens.e2,
+          child: const Icon(Icons.email_outlined),
         ),
-      ),
+        const SizedBox(height: DesignTokens.s12),
+        // FAB principal — Añadir suscripción
+        FloatingActionButton.extended(
+          heroTag: 'fab_add',
+          onPressed: onAdd,
+          backgroundColor: DesignTokens.primary,
+          foregroundColor: Colors.white,
+          elevation: DesignTokens.e4,
+          icon: const Icon(Icons.add_rounded),
+          label: const Text(
+            'Añadir',
+            style: TextStyle(
+              fontFamily: DesignTokens.fontFamily,
+              fontWeight: DesignTokens.wSemibold,
+            ),
+          ),
+        ),
+      ],
     );
   }
 }
-
-

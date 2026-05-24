@@ -91,6 +91,48 @@ class SubscriptionNotifier extends StateNotifier<SubscriptionState> {
     }
   }
 
+  /// Agrega una nueva suscripción al repositorio y al estado local.
+  Future<void> addSubscription(Subscription subscription) async {
+    try {
+      await _repository.saveSubscription(subscription);
+      final updated = [...state.allSubscriptions, subscription];
+      state = state.copyWith(allSubscriptions: updated);
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+    }
+  }
+
+  /// Edita una suscripción existente en el repositorio y en el estado local.
+  Future<void> editSubscription(Subscription updated) async {
+    try {
+      await _repository.updateSubscription(updated);
+      final newList = state.allSubscriptions
+          .map((s) => s.id == updated.id ? updated : s)
+          .toList();
+      state = state.copyWith(allSubscriptions: newList);
+    } catch (e) {
+      state = state.copyWith(error: e.toString());
+    }
+  }
+
+  /// Sincroniza suscripciones desde Gmail y agrega las nuevas (deduplicadas).
+  Future<void> syncGmail() async {
+    state = state.copyWith(isLoading: true);
+    try {
+      final imported = await _repository.syncWithGmail();
+      final existing = state.allSubscriptions
+          .map((s) => s.nombre.toLowerCase())
+          .toSet();
+      final newOnes = imported
+          .where((s) => !existing.contains(s.nombre.toLowerCase()))
+          .toList();
+      final combined = [...state.allSubscriptions, ...newOnes];
+      state = state.copyWith(allSubscriptions: combined, isLoading: false);
+    } catch (e) {
+      state = state.copyWith(isLoading: false, error: e.toString());
+    }
+  }
+
   /// Limpia el error actual.
   void clearError() => state = state.copyWith(error: null);
 }
