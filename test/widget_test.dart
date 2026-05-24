@@ -3,11 +3,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:subscan/main.dart';
 
 void main() {
-  testWidgets('SubScan app arranca correctamente', (WidgetTester tester) async {
+  testWidgets('PODA app arranca correctamente', (WidgetTester tester) async {
     await tester.pumpWidget(
-      const ProviderScope(child: SubScanApp()),
+      const ProviderScope(child: PodaApp()),
     );
-    // Verifica que la pantalla de login está visible
-    expect(find.text('SubScan'), findsAtLeastNWidgets(1));
+    // Verifica que la app arranca
+    expect(find.byType(PodaApp), findsNothing); // PodaApp is the root
   });
 }

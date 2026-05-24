@@ -4,7 +4,20 @@ import 'package:subscan/core/theme/design_tokens.dart';
 import 'package:subscan/features/auth/auth_provider.dart';
 import 'package:subscan/features/subscriptions/presentation/pages/main_shell.dart';
 
-/// Pantalla de inicio / login de SubScan.
+// ── Colores exactos del Figma ─────────────────────────────────────────────────
+const Color _kBg = Color(0xFF030B3F);     // fondo oscuro
+const Color _kCard = Color(0xFF111C63);   // tarjeta inferior
+const Color _kBlue = Color(0xFF3461FD);   // botón primario
+const Color _kInputBg = Color(0xFFF4F7FB); // campos de texto
+const Color _kHint = Color(0xFF8E8D8D);   // placeholder
+const Color _kLink = Color(0xFF94A3B8);   // links de ayuda
+const Color _kInputBorder = Color(0xFFE2E8F0);
+
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Página de inicio de sesión — PODA
+/// Diseño fiel al Figma: fondo navy + tarjeta azul oscuro con campos email/pass,
+/// botón principal + Google alternativo.
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
 
@@ -12,185 +25,161 @@ class LoginPage extends ConsumerStatefulWidget {
   ConsumerState<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends ConsumerState<LoginPage>
-    with SingleTickerProviderStateMixin {
-  late AnimationController _animController;
-  late Animation<double> _fadeAnim;
-  late Animation<Offset> _slideAnim;
+class _LoginPageState extends ConsumerState<LoginPage> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailCtrl = TextEditingController();
+  final _passCtrl = TextEditingController();
 
-  @override
-  void initState() {
-    super.initState();
-    _animController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 900),
-    );
-
-    _fadeAnim = CurvedAnimation(parent: _animController, curve: Curves.easeOut);
-
-    _slideAnim = Tween<Offset>(begin: const Offset(0, 0.12), end: Offset.zero)
-        .animate(
-          CurvedAnimation(parent: _animController, curve: Curves.easeOutCubic),
-        );
-
-    _animController.forward();
-  }
+  bool _obscurePass = true;
+  bool _loading = false;
+  String? _errorMsg;
+  // false = login, true = registro
+  bool _isRegisterMode = false;
 
   @override
   void dispose() {
-    _animController.dispose();
+    _emailCtrl.dispose();
+    _passCtrl.dispose();
     super.dispose();
   }
 
-  void _navigateToDashboard() {
+  // ── Navegación ───────────────────────────────────────────────────────────
+
+  void _goToDashboard() {
     Navigator.of(context).pushReplacement(
       PageRouteBuilder(
-        pageBuilder: (context, animation, secondaryAnimation) =>
-            const MainShell(),
-        transitionsBuilder: (_, anim, _, child) =>
+        pageBuilder: (context2, anim, secondary) => const MainShell(),
+        transitionsBuilder: (context2, anim, secondary, child) =>
             FadeTransition(opacity: anim, child: child),
         transitionDuration: DesignTokens.animNormal,
       ),
     );
   }
 
+  // ── Acciones de auth ─────────────────────────────────────────────────────
+
+  Future<void> _submitEmailPass() async {
+    if (!_formKey.currentState!.validate()) return;
+    setState(() {
+      _loading = true;
+      _errorMsg = null;
+    });
+    try {
+      final auth = ref.read(authServiceProvider);
+      if (_isRegisterMode) {
+        await auth.registerWithEmail(
+          _emailCtrl.text.trim(),
+          _passCtrl.text,
+        );
+      } else {
+        await auth.signInWithEmail(
+          _emailCtrl.text.trim(),
+          _passCtrl.text,
+        );
+      }
+      if (mounted) _goToDashboard();
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _errorMsg = _friendlyError(e.toString());
+        });
+      }
+    }
+  }
+
+  Future<void> _signInWithGoogle() async {
+    setState(() {
+      _loading = true;
+      _errorMsg = null;
+    });
+    try {
+      await ref.read(authServiceProvider).signInWithGoogle();
+      if (mounted) _goToDashboard();
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _loading = false;
+          _errorMsg = e.toString().contains('cancelled')
+              ? null
+              : 'No se pudo iniciar sesión con Google';
+        });
+      }
+    }
+  }
+
+  Future<void> _forgotPassword() async {
+    final email = _emailCtrl.text.trim();
+    if (email.isEmpty) {
+      setState(() => _errorMsg = 'Ingresa tu email primero para recuperar contraseña');
+      return;
+    }
+    setState(() => _errorMsg = null);
+    try {
+      await ref.read(authServiceProvider).resetPassword(email);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Email de recuperación enviado a $email ✅'),
+            backgroundColor: const Color(0xFF07D47B),
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (_) {
+      setState(() => _errorMsg = 'No se pudo enviar el email de recuperación');
+    }
+  }
+
+  String _friendlyError(String raw) {
+    if (raw.contains('wrong-password') || raw.contains('invalid-credential')) {
+      return 'Email o contraseña incorrectos';
+    }
+    if (raw.contains('user-not-found')) {
+      return 'No existe cuenta con ese email. ¿Quieres crear una?';
+    }
+    if (raw.contains('email-already-in-use')) {
+      return 'Ya existe una cuenta con este email';
+    }
+    if (raw.contains('weak-password')) {
+      return 'La contraseña es muy corta (mínimo 6 caracteres)';
+    }
+    if (raw.contains('invalid-email')) return 'El formato del email no es válido';
+    if (raw.contains('too-many-requests')) {
+      return 'Demasiados intentos. Espera unos minutos';
+    }
+    if (raw.contains('network')) return 'Sin conexión a internet';
+    return 'Error al iniciar sesión. Intenta de nuevo';
+  }
+
+  // ── Build ────────────────────────────────────────────────────────────────
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        decoration: const BoxDecoration(gradient: DesignTokens.headerGradient),
-        child: SafeArea(
-          child: FadeTransition(
-            opacity: _fadeAnim,
-            child: SlideTransition(
-              position: _slideAnim,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: DesignTokens.s32,
-                ),
-                child: Column(
-                  children: [
-                    const Spacer(flex: 2),
-                    _Logo(),
-                    const SizedBox(height: DesignTokens.s32),
-                    _Headline(),
-                    const Spacer(flex: 3),
-                    _GoogleSignInButton(onTap: _navigateToDashboard),
-                    const SizedBox(height: DesignTokens.s16),
-                    _Disclaimer(),
-                    const SizedBox(height: DesignTokens.s32),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _Logo extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          width: 88,
-          height: 88,
-          decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.15),
-            borderRadius: BorderRadius.circular(DesignTokens.rXL),
-            border: Border.all(
-              color: Colors.white.withValues(alpha: 0.3),
-              width: 1.5,
-            ),
-          ),
-          child: const Center(
-            child: Icon(Icons.radar_rounded, size: 48, color: Colors.white),
-          ),
-        ),
-        const SizedBox(height: DesignTokens.s20),
-        const Text(
-          'SubScan',
-          style: TextStyle(
-            fontFamily: DesignTokens.fontFamily,
-            fontSize: 38,
-            fontWeight: DesignTokens.wExtraBold,
-            color: Colors.white,
-            letterSpacing: -0.5,
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _Headline extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(
-          'Controla todas tus\nsuscripciones en un lugar',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            fontFamily: DesignTokens.fontFamily,
-            fontSize: 18,
-            fontWeight: DesignTokens.wMedium,
-            color: Colors.white.withValues(alpha: 0.90),
-            height: 1.5,
-          ),
-        ),
-        const SizedBox(height: DesignTokens.s24),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            _FeaturePill(
-              icon: Icons.notifications_active_outlined,
-              label: 'Alertas',
-            ),
-            const SizedBox(width: DesignTokens.s8),
-            _FeaturePill(icon: Icons.email_outlined, label: 'Gmail'),
-            const SizedBox(width: DesignTokens.s8),
-            _FeaturePill(icon: Icons.bar_chart_rounded, label: 'Análisis'),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class _FeaturePill extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  const _FeaturePill({required this.icon, required this.label});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(
-        horizontal: DesignTokens.s12,
-        vertical: DesignTokens.s6,
-      ),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(DesignTokens.rFull),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.25)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
+      backgroundColor: _kBg,
+      resizeToAvoidBottomInset: false,
+      body: Column(
         children: [
-          Icon(icon, size: 14, color: Colors.white),
-          const SizedBox(width: DesignTokens.s4),
-          Text(
-            label,
-            style: const TextStyle(
-              fontFamily: DesignTokens.fontFamily,
-              fontSize: 12,
-              fontWeight: DesignTokens.wMedium,
-              color: Colors.white,
-            ),
+          // Sección superior — branding
+          Expanded(child: _TopSection()),
+          // Tarjeta inferior — formulario
+          _LoginCard(
+            formKey: _formKey,
+            emailCtrl: _emailCtrl,
+            passCtrl: _passCtrl,
+            obscurePass: _obscurePass,
+            loading: _loading,
+            errorMsg: _errorMsg,
+            isRegisterMode: _isRegisterMode,
+            onTogglePass: () => setState(() => _obscurePass = !_obscurePass),
+            onSubmit: _submitEmailPass,
+            onGoogle: _signInWithGoogle,
+            onForgotPassword: _forgotPassword,
+            onToggleMode: () => setState(() {
+              _isRegisterMode = !_isRegisterMode;
+              _errorMsg = null;
+            }),
           ),
         ],
       ),
@@ -198,131 +187,699 @@ class _FeaturePill extends StatelessWidget {
   }
 }
 
-class _GoogleSignInButton extends ConsumerStatefulWidget {
-  final VoidCallback onTap;
-  const _GoogleSignInButton({required this.onTap});
+// ─────────────────────────────────────────────────────────────────────────────
+// Sección superior: decoración, logos, branding
+// ─────────────────────────────────────────────────────────────────────────────
 
+class _TopSection extends StatelessWidget {
   @override
-  ConsumerState<_GoogleSignInButton> createState() =>
-      _GoogleSignInButtonState();
+  Widget build(BuildContext context) {
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        // Ola decorativa superior (Vector 2 del Figma)
+        Positioned(
+          top: 0, left: 0, right: 0,
+          child: CustomPaint(
+            painter: _WavePainter(),
+            child: const SizedBox(height: 180),
+          ),
+        ),
+        // Contenido principal
+        SafeArea(
+          bottom: false,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 28),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 16),
+                // Logo + nombre PODA
+                Row(
+                  children: [
+                    Container(
+                      width: 38,
+                      height: 38,
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.18),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.35),
+                          width: 1.2,
+                        ),
+                      ),
+                      child: const Center(
+                        child: Icon(
+                          Icons.content_cut_rounded,
+                          color: Colors.white,
+                          size: 20,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 10),
+                    const Text(
+                      'PODA',
+                      style: TextStyle(
+                        fontFamily: DesignTokens.fontFamily,
+                        fontSize: 22,
+                        fontWeight: DesignTokens.wExtraBold,
+                        color: Colors.white,
+                        letterSpacing: 1.5,
+                      ),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                // Logos de servicios populares
+                _ServiceLogosRow(),
+                const SizedBox(height: 14),
+                // Titular principal
+                const Text(
+                  'Bienvenido a PODA',
+                  style: TextStyle(
+                    fontFamily: DesignTokens.fontFamily,
+                    fontSize: 22,
+                    fontWeight: DesignTokens.wExtraBold,
+                    color: Colors.white,
+                    height: 1.2,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                // Subtítulo
+                Text(
+                  'Controla tus suscripciones fácilmente.',
+                  style: TextStyle(
+                    fontFamily: DesignTokens.fontFamily,
+                    fontSize: 14,
+                    fontWeight: DesignTokens.wSemibold,
+                    color: Colors.white.withValues(alpha: 0.75),
+                  ),
+                ),
+                const SizedBox(height: 28),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
-class _GoogleSignInButtonState extends ConsumerState<_GoogleSignInButton> {
-  bool _loading = false;
+// ─── Row de logos de servicios ────────────────────────────────────────────────
 
-  Future<void> _handleTap() async {
-    setState(() => _loading = true);
-    try {
-      final authService = ref.read(authServiceProvider);
-      await authService.signInWithGoogle();
-      if (mounted) {
-        setState(() => _loading = false);
-        widget.onTap();
-      }
-    } catch (e) {
-      if (mounted) {
-        setState(() => _loading = false);
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Error al iniciar sesión: $e')));
-      }
-    }
-  }
+class _ServiceLogosRow extends StatelessWidget {
+  // Datos de los servicios (nombre, color de marca)
+  static const _services = [
+    ('N', Color(0xFFE50914)),  // Netflix
+    ('S', Color(0xFF1DB954)),  // Spotify
+    ('Y', Color(0xFFFF0000)),  // YouTube
+    ('D+', Color(0xFF0F3FA2)), // Disney+
+    ('A', Color(0xFF00A8E0)),  // Adobe / Amazon
+  ];
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: double.infinity,
-      height: 54,
-      child: ElevatedButton(
-        onPressed: _loading ? null : _handleTap,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: DesignTokens.textPrimary,
-          elevation: DesignTokens.e4,
-          shadowColor: Colors.black26,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(DesignTokens.rM),
+    return Row(
+      children: _services.asMap().entries.map((e) {
+        final i = e.key;
+        final label = e.value.$1;
+        final color = e.value.$2;
+        // Efecto de pila con overlap negativo
+        return Transform.translate(
+          offset: Offset(i * -8.0, 0),
+          child: Container(
+            width: 42,
+            height: 42,
+            decoration: BoxDecoration(
+              color: color,
+              shape: BoxShape.circle,
+              border: Border.all(
+                color: _kBg,
+                width: 2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.25),
+                  blurRadius: 6,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  fontFamily: DesignTokens.fontFamily,
+                  fontSize: 13,
+                  fontWeight: DesignTokens.wBold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
           ),
+        );
+      }).toList(),
+    );
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tarjeta de login: #111C63, bordes redondeados arriba (r=68)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _LoginCard extends StatelessWidget {
+  final GlobalKey<FormState> formKey;
+  final TextEditingController emailCtrl;
+  final TextEditingController passCtrl;
+  final bool obscurePass;
+  final bool loading;
+  final String? errorMsg;
+  final bool isRegisterMode;
+  final VoidCallback onTogglePass;
+  final VoidCallback onSubmit;
+  final VoidCallback onGoogle;
+  final VoidCallback onForgotPassword;
+  final VoidCallback onToggleMode;
+
+  const _LoginCard({
+    required this.formKey,
+    required this.emailCtrl,
+    required this.passCtrl,
+    required this.obscurePass,
+    required this.loading,
+    required this.errorMsg,
+    required this.isRegisterMode,
+    required this.onTogglePass,
+    required this.onSubmit,
+    required this.onGoogle,
+    required this.onForgotPassword,
+    required this.onToggleMode,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final bottomInset = MediaQuery.of(context).viewInsets.bottom;
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: _kCard,
+        borderRadius: BorderRadius.vertical(
+          top: Radius.circular(68),
         ),
-        child: _loading
-            ? const SizedBox(
-                width: 22,
-                height: 22,
-                child: CircularProgressIndicator(
-                  strokeWidth: 2.5,
-                  valueColor: AlwaysStoppedAnimation<Color>(
-                    DesignTokens.primary,
+      ),
+      child: SingleChildScrollView(
+        physics: const ClampingScrollPhysics(),
+        padding: EdgeInsets.only(
+          left: 28,
+          right: 28,
+          top: 36,
+          bottom: bottomInset > 0 ? bottomInset + 20 : 36,
+        ),
+        child: Form(
+          key: formKey,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Título del formulario
+              Text(
+                isRegisterMode ? 'Crear cuenta' : 'Iniciar Sesión',
+                style: const TextStyle(
+                  fontFamily: DesignTokens.fontFamily,
+                  fontSize: 20,
+                  fontWeight: DesignTokens.wBold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                isRegisterMode
+                    ? 'Ingresa tus datos para registrarte'
+                    : 'Ingresa tus credenciales para continuar',
+                style: TextStyle(
+                  fontFamily: DesignTokens.fontFamily,
+                  fontSize: 12,
+                  color: Colors.white.withValues(alpha: 0.55),
+                ),
+              ),
+              const SizedBox(height: 24),
+
+              // ── Campo Email ───────────────────────────────────────────────
+              _InputField(
+                controller: emailCtrl,
+                hintText: 'Email...',
+                keyboardType: TextInputType.emailAddress,
+                prefixIcon: Icons.alternate_email_rounded,
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return 'Ingresa tu email';
+                  if (!RegExp(r'^[^@\s]+@[^@\s]+\.[^@\s]+$').hasMatch(v.trim())) {
+                    return 'Email inválido';
+                  }
+                  return null;
+                },
+              ),
+              const SizedBox(height: 14),
+
+              // ── Campo Contraseña ──────────────────────────────────────────
+              _InputField(
+                controller: passCtrl,
+                hintText: 'Contraseña...',
+                obscureText: obscurePass,
+                prefixIcon: Icons.lock_outline_rounded,
+                suffixIcon: GestureDetector(
+                  onTap: onTogglePass,
+                  child: Icon(
+                    obscurePass
+                        ? Icons.visibility_off_outlined
+                        : Icons.visibility_outlined,
+                    color: _kHint,
+                    size: 20,
                   ),
                 ),
-              )
-            : Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Ingresa tu contraseña';
+                  if (isRegisterMode && v.length < 6) {
+                    return 'Mínimo 6 caracteres';
+                  }
+                  return null;
+                },
+              ),
+
+              // ── Mensaje de error ──────────────────────────────────────────
+              if (errorMsg != null) ...[
+                const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE5223A).withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: const Color(0xFFE5223A).withValues(alpha: 0.4),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(
+                        Icons.error_outline_rounded,
+                        color: Color(0xFFFF6B6B),
+                        size: 16,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Text(
+                          errorMsg!,
+                          style: const TextStyle(
+                            fontFamily: DesignTokens.fontFamily,
+                            fontSize: 12,
+                            color: Color(0xFFFF6B6B),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+
+              const SizedBox(height: 22),
+
+              // ── Botón principal — Iniciar Sesión ──────────────────────────
+              SizedBox(
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: loading ? null : onSubmit,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _kBlue,
+                    disabledBackgroundColor: _kBlue.withValues(alpha: 0.5),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
+                  child: loading
+                      ? const SizedBox(
+                          width: 22,
+                          height: 22,
+                          child: CircularProgressIndicator(
+                            strokeWidth: 2.5,
+                            valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                          ),
+                        )
+                      : Text(
+                          isRegisterMode ? 'Crear cuenta' : 'Iniciar Sesión',
+                          style: const TextStyle(
+                            fontFamily: DesignTokens.fontFamily,
+                            fontSize: 17,
+                            fontWeight: DesignTokens.wSemibold,
+                            color: Colors.white,
+                          ),
+                        ),
+                ),
+              ),
+
+              const SizedBox(height: 22),
+
+              // ── Divisor "O" ───────────────────────────────────────────────
+              Row(
                 children: [
-                  _GoogleIcon(),
-                  const SizedBox(width: DesignTokens.s12),
-                  const Text(
-                    'Continuar con Google',
-                    style: TextStyle(
-                      fontFamily: DesignTokens.fontFamily,
-                      fontSize: 16,
-                      fontWeight: DesignTokens.wSemibold,
-                      color: DesignTokens.textPrimary,
+                  Expanded(
+                    child: Container(
+                      height: 1,
+                      color: Colors.white.withValues(alpha: 0.15),
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 14),
+                    child: Text(
+                      'O',
+                      style: TextStyle(
+                        fontFamily: DesignTokens.fontFamily,
+                        fontSize: 13,
+                        fontWeight: DesignTokens.wMedium,
+                        color: Colors.white.withValues(alpha: 0.55),
+                      ),
+                    ),
+                  ),
+                  Expanded(
+                    child: Container(
+                      height: 1,
+                      color: Colors.white.withValues(alpha: 0.15),
                     ),
                   ),
                 ],
               ),
+
+              const SizedBox(height: 22),
+
+              // ── Botón Google ──────────────────────────────────────────────
+              SizedBox(
+                height: 52,
+                child: ElevatedButton(
+                  onPressed: loading ? null : onGoogle,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _kInputBg,
+                    disabledBackgroundColor: _kInputBg.withValues(alpha: 0.5),
+                    elevation: 0,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(13),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 22,
+                        height: 22,
+                        child: CustomPaint(painter: _GoogleLogoPainter()),
+                      ),
+                      const SizedBox(width: 12),
+                      const Text(
+                        'Google',
+                        style: TextStyle(
+                          fontFamily: DesignTokens.fontFamily,
+                          fontSize: 15,
+                          fontWeight: DesignTokens.wMedium,
+                          color: Color(0xFF4A4A4A),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+
+              const SizedBox(height: 22),
+
+              // ── Links de ayuda ────────────────────────────────────────────
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  // ¿Olvidaste contraseña?
+                  GestureDetector(
+                    onTap: onForgotPassword,
+                    child: Text(
+                      '¿Olvidaste de tu contraseña?',
+                      style: TextStyle(
+                        fontFamily: DesignTokens.fontFamily,
+                        fontSize: 11,
+                        fontWeight: DesignTokens.wBold,
+                        color: _kLink,
+                        decoration: TextDecoration.underline,
+                        decorationColor: _kLink,
+                      ),
+                    ),
+                  ),
+                  // ¿Tienes problemas?
+                  GestureDetector(
+                    onTap: () {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Contacta a soporte: soporte@poda.app'),
+                          behavior: SnackBarBehavior.floating,
+                        ),
+                      );
+                    },
+                    child: Text(
+                      '¿Tienes problemas?',
+                      style: TextStyle(
+                        fontFamily: DesignTokens.fontFamily,
+                        fontSize: 11,
+                        fontWeight: DesignTokens.wBold,
+                        color: _kLink,
+                        decoration: TextDecoration.underline,
+                        decorationColor: _kLink,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+
+              const SizedBox(height: 20),
+
+              // ── Toggle Login / Registro ───────────────────────────────────
+              Center(
+                child: GestureDetector(
+                  onTap: onToggleMode,
+                  child: RichText(
+                    text: TextSpan(
+                      style: TextStyle(
+                        fontFamily: DesignTokens.fontFamily,
+                        fontSize: 12,
+                        color: Colors.white.withValues(alpha: 0.55),
+                      ),
+                      children: [
+                        TextSpan(
+                          text: isRegisterMode
+                              ? '¿Ya tienes cuenta? '
+                              : '¿No tienes cuenta? ',
+                        ),
+                        TextSpan(
+                          text: isRegisterMode ? 'Inicia sesión' : 'Regístrate',
+                          style: const TextStyle(
+                            color: Color(0xFF7B9FFF),
+                            fontWeight: DesignTokens.wBold,
+                            decoration: TextDecoration.underline,
+                            decorationColor: Color(0xFF7B9FFF),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
     );
   }
 }
 
-class _GoogleIcon extends StatelessWidget {
+// ─────────────────────────────────────────────────────────────────────────────
+// Widget campo de input (reutilizable)
+// ─────────────────────────────────────────────────────────────────────────────
+
+class _InputField extends StatelessWidget {
+  final TextEditingController controller;
+  final String hintText;
+  final bool obscureText;
+  final TextInputType keyboardType;
+  final IconData prefixIcon;
+  final Widget? suffixIcon;
+  final String? Function(String?)? validator;
+
+  const _InputField({
+    required this.controller,
+    required this.hintText,
+    this.obscureText = false,
+    this.keyboardType = TextInputType.text,
+    required this.prefixIcon,
+    this.suffixIcon,
+    this.validator,
+  });
+
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 22,
-      height: 22,
-      child: CustomPaint(painter: _GoogleLogoPainter()),
+    return TextFormField(
+      controller: controller,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      style: const TextStyle(
+        fontFamily: DesignTokens.fontFamily,
+        fontSize: 14,
+        color: Color(0xFF1E293B),
+        fontWeight: DesignTokens.wMedium,
+      ),
+      validator: validator,
+      decoration: InputDecoration(
+        hintText: hintText,
+        hintStyle: TextStyle(
+          fontFamily: DesignTokens.fontFamily,
+          fontSize: 13,
+          color: _kHint,
+          fontWeight: FontWeight.w500,
+        ),
+        filled: true,
+        fillColor: _kInputBg,
+        prefixIcon: Icon(prefixIcon, size: 18, color: _kHint),
+        suffixIcon: suffixIcon != null
+            ? Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: suffixIcon,
+              )
+            : null,
+        suffixIconConstraints: const BoxConstraints(
+          minWidth: 44,
+          minHeight: 44,
+        ),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide.none,
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide(color: _kInputBorder, width: 1),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: const BorderSide(color: _kBlue, width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: const BorderSide(color: Color(0xFFE5223A), width: 1),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(15),
+          borderSide: const BorderSide(color: Color(0xFFE5223A), width: 1.5),
+        ),
+        errorStyle: const TextStyle(
+          fontFamily: DesignTokens.fontFamily,
+          fontSize: 11,
+          color: Color(0xFFFF6B6B),
+        ),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: 16,
+          vertical: 14,
+        ),
+      ),
     );
   }
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Pintores personalizados
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Ola decorativa superior (Vector 2 del Figma)
+class _WavePainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    // Forma ola izquierda superior
+    final paint1 = Paint()
+      ..color = const Color(0xFF0F1D70).withValues(alpha: 0.65)
+      ..style = PaintingStyle.fill;
+
+    final path1 = Path();
+    path1.moveTo(0, 0);
+    path1.lineTo(size.width * 0.70, 0);
+    path1.quadraticBezierTo(
+      size.width * 0.55, size.height * 0.6,
+      size.width * 0.30, size.height * 0.85,
+    );
+    path1.quadraticBezierTo(
+      size.width * 0.10, size.height,
+      0, size.height * 0.80,
+    );
+    path1.close();
+    canvas.drawPath(path1, paint1);
+
+    // Forma ola derecha superior (más tenue)
+    final paint2 = Paint()
+      ..color = const Color(0xFF1A2E8F).withValues(alpha: 0.40)
+      ..style = PaintingStyle.fill;
+
+    final path2 = Path();
+    path2.moveTo(size.width, 0);
+    path2.lineTo(size.width * 0.55, 0);
+    path2.quadraticBezierTo(
+      size.width * 0.72, size.height * 0.5,
+      size.width * 0.90, size.height * 0.9,
+    );
+    path2.lineTo(size.width, size.height * 0.6);
+    path2.close();
+    canvas.drawPath(path2, paint2);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter old) => false;
+}
+
+/// Logo de Google pintado con CustomPainter
 class _GoogleLogoPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
     final r = size.width / 2;
 
-    // Círculo base gris claro
-    canvas.drawCircle(center, r, Paint()..color = const Color(0xFFEEEEEE));
-
-    // Letras G en colores de Google
+    // Arcos de colores Google
     final paint = Paint()
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.5;
+      ..strokeCap = StrokeCap.round
+      ..strokeWidth = 2.8;
 
-    paint.color = const Color(0xFF4285F4); // Azul
+    // Azul
+    paint.color = const Color(0xFF4285F4);
     canvas.drawArc(
-      Rect.fromCircle(center: center, radius: r * 0.65),
-      -0.5,
-      2.6,
+      Rect.fromCircle(center: center, radius: r * 0.72),
+      -1.57, // -90°
+      2.80,
       false,
       paint,
     );
-    paint.color = const Color(0xFF34A853); // Verde
+    // Verde
+    paint.color = const Color(0xFF34A853);
     canvas.drawArc(
-      Rect.fromCircle(center: center, radius: r * 0.65),
-      2.1,
-      1.0,
+      Rect.fromCircle(center: center, radius: r * 0.72),
+      1.23,
+      1.15,
       false,
       paint,
     );
-    paint.color = const Color(0xFFEA4335); // Rojo
+    // Amarillo
+    paint.color = const Color(0xFFFBBC05);
     canvas.drawArc(
-      Rect.fromCircle(center: center, radius: r * 0.65),
-      3.1,
-      0.8,
+      Rect.fromCircle(center: center, radius: r * 0.72),
+      2.38,
+      0.85,
+      false,
+      paint,
+    );
+    // Rojo
+    paint.color = const Color(0xFFEA4335);
+    canvas.drawArc(
+      Rect.fromCircle(center: center, radius: r * 0.72),
+      3.23,
+      0.87,
       false,
       paint,
     );
@@ -330,20 +887,4 @@ class _GoogleLogoPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter old) => false;
-}
-
-class _Disclaimer extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      'Al continuar aceptas los Términos de Servicio\ny la Política de Privacidad',
-      textAlign: TextAlign.center,
-      style: TextStyle(
-        fontFamily: DesignTokens.fontFamily,
-        fontSize: 11,
-        color: Colors.white.withValues(alpha: 0.55),
-        height: 1.5,
-      ),
-    );
-  }
 }

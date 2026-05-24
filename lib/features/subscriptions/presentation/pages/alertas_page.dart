@@ -233,7 +233,7 @@ class _SummaryCard extends StatelessWidget {
               shape: BoxShape.circle,
             ),
             child: const Icon(
-              Icons.search_rounded,
+              Icons.notifications_active_rounded,
               color: Colors.white,
               size: 24,
             ),

@@ -27,9 +27,34 @@ class _AddSubscriptionPageState extends ConsumerState<AddSubscriptionPage> {
   late final TextEditingController _nombreCtrl;
   late final TextEditingController _precioCtrl;
   late final TextEditingController _precioOrigCtrl;
+  late final TextEditingController _notasCtrl;
   late DateTime _fechaRenovacion;
+  late String _selectedCategory;
+  late String _selectedPaymentMethod;
+  late bool _repeatMonthly;
 
   bool _saving = false;
+
+  static const List<String> _categories = [
+    'Entretenimiento',
+    'Productividad',
+    'Música',
+    'Educación',
+    'Salud',
+    'Deportes',
+    'Viajes',
+    'Otro',
+  ];
+
+  static const List<String> _paymentMethods = [
+    'Tarjeta de crédito',
+    'Tarjeta de débito',
+    'PayPal',
+    'Google Pay',
+    'Apple Pay',
+    'Transferencia bancaria',
+    'Otro',
+  ];
 
   @override
   void initState() {
@@ -44,8 +69,12 @@ class _AddSubscriptionPageState extends ConsumerState<AddSubscriptionPage> {
           ? s!.precioOriginal!.toStringAsFixed(2)
           : '',
     );
+    _notasCtrl = TextEditingController();
     _fechaRenovacion =
         s?.fechaRenovacion ?? DateTime.now().add(const Duration(days: 30));
+    _selectedCategory = _categories[0];
+    _selectedPaymentMethod = _paymentMethods[0];
+    _repeatMonthly = true;
   }
 
   @override
@@ -53,6 +82,7 @@ class _AddSubscriptionPageState extends ConsumerState<AddSubscriptionPage> {
     _nombreCtrl.dispose();
     _precioCtrl.dispose();
     _precioOrigCtrl.dispose();
+    _notasCtrl.dispose();
     super.dispose();
   }
 
@@ -138,8 +168,9 @@ class _AddSubscriptionPageState extends ConsumerState<AddSubscriptionPage> {
 
   @override
   Widget build(BuildContext context) {
-    final title =
-        widget.isEditing ? 'Editar suscripción' : 'Nueva suscripción';
+    final title = widget.isEditing
+        ? 'Editar suscripción'
+        : 'Agregar suscripción';
 
     return Scaffold(
       backgroundColor: DesignTokens.background,
@@ -147,18 +178,32 @@ class _AddSubscriptionPageState extends ConsumerState<AddSubscriptionPage> {
         backgroundColor: DesignTokens.primary,
         foregroundColor: Colors.white,
         elevation: 0,
-        title: Text(
-          title,
-          style: const TextStyle(
-            fontFamily: DesignTokens.fontFamily,
-            fontWeight: DesignTokens.wSemibold,
-            fontSize: 18,
-            color: Colors.white,
-          ),
-        ),
         leading: IconButton(
-          icon: const Icon(Icons.close_rounded),
+          icon: const Icon(Icons.arrow_back_rounded),
           onPressed: () => Navigator.of(context).pop(),
+        ),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              title,
+              style: const TextStyle(
+                fontFamily: DesignTokens.fontFamily,
+                fontWeight: DesignTokens.wSemibold,
+                fontSize: 18,
+                color: Colors.white,
+              ),
+            ),
+            Text(
+              'Añade manualmente una nueva suscripción',
+              style: TextStyle(
+                fontFamily: DesignTokens.fontFamily,
+                fontSize: 12,
+                color: Colors.white.withValues(alpha: 0.7),
+                fontWeight: DesignTokens.wRegular,
+              ),
+            ),
+          ],
         ),
       ),
       body: Form(
@@ -166,8 +211,61 @@ class _AddSubscriptionPageState extends ConsumerState<AddSubscriptionPage> {
         child: ListView(
           padding: const EdgeInsets.all(DesignTokens.s20),
           children: [
-            // ── Sección: Servicio ─────────────────────────────────────────
-            _SectionLabel('Servicio'),
+            // ── Sección: Icono de la app ──────────────────────────────────────
+            _SectionLabel('Icono de la app'),
+            _FormCard(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: DesignTokens.s16,
+                  vertical: DesignTokens.s20,
+                ),
+                child: Center(
+                  child: Column(
+                    children: [
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: DesignTokens.surfaceVariant,
+                          borderRadius: BorderRadius.circular(DesignTokens.rM),
+                          border: Border.all(
+                            color: DesignTokens.divider,
+                            strokeAlign: BorderSide.strokeAlignOutside,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.image_outlined,
+                          size: 40,
+                          color: DesignTokens.textSecondary,
+                        ),
+                      ),
+                      const SizedBox(height: DesignTokens.s12),
+                      Text(
+                        'Toca para agregar el logo',
+                        style: TextStyle(
+                          fontFamily: DesignTokens.fontFamily,
+                          fontSize: 13,
+                          fontWeight: DesignTokens.wMedium,
+                          color: DesignTokens.primary,
+                        ),
+                      ),
+                      Text(
+                        'JPG, PNG',
+                        style: TextStyle(
+                          fontFamily: DesignTokens.fontFamily,
+                          fontSize: 11,
+                          color: DesignTokens.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: DesignTokens.s20),
+
+            // ── Sección: Nombre de la suscripción ─────────────────────────────────────────
+            _SectionLabel('Nombre de la suscripción'),
             _FormCard(
               child: Column(
                 children: [
@@ -181,8 +279,10 @@ class _AddSubscriptionPageState extends ConsumerState<AddSubscriptionPage> {
                         fontSize: 15,
                         color: DesignTokens.textPrimary,
                       ),
-                      decoration: _inputDecoration('Nombre del servicio',
-                          hint: 'ej. Netflix, Spotify…'),
+                      decoration: _inputDecoration(
+                        'Nombre de la suscripción',
+                        hint: 'Ej. Spotify',
+                      ),
                       validator: (v) => (v == null || v.trim().isEmpty)
                           ? 'Ingresa el nombre'
                           : null,
@@ -193,8 +293,38 @@ class _AddSubscriptionPageState extends ConsumerState<AddSubscriptionPage> {
             ),
             const SizedBox(height: DesignTokens.s20),
 
-            // ── Sección: Precios ──────────────────────────────────────────
-            _SectionLabel('Precios'),
+            // ── Sección: Categoría ────────────────────────────────────────
+            _SectionLabel('Categoría'),
+            _FormCard(
+              child: _FieldRow(
+                icon: Icons.category_outlined,
+                child: DropdownButtonFormField<String>(
+                  // ignore: deprecated_member_use
+                  value: _selectedCategory,
+                  items: _categories
+                      .map((cat) => DropdownMenuItem(
+                            value: cat,
+                            child: Text(cat),
+                          ))
+                      .toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => _selectedCategory = value);
+                    }
+                  },
+                  style: const TextStyle(
+                    fontFamily: DesignTokens.fontFamily,
+                    fontSize: 15,
+                    color: DesignTokens.textPrimary,
+                  ),
+                  decoration: _inputDecoration('Categoría', hint: 'Entretenimiento'),
+                ),
+              ),
+            ),
+            const SizedBox(height: DesignTokens.s20),
+
+            // ── Sección: Costo mensual ──────────────────────────────────────────
+            _SectionLabel('Costo mensual'),
             _FormCard(
               child: Column(
                 children: [
@@ -213,7 +343,7 @@ class _AddSubscriptionPageState extends ConsumerState<AddSubscriptionPage> {
                         fontSize: 15,
                         color: DesignTokens.textPrimary,
                       ),
-                      decoration: _inputDecoration('Precio actual',
+                      decoration: _inputDecoration('Costo mensual',
                           hint: '0.00', suffix: '/mes'),
                       validator: (v) {
                         if (v == null || v.trim().isEmpty) {
@@ -265,8 +395,8 @@ class _AddSubscriptionPageState extends ConsumerState<AddSubscriptionPage> {
             ),
             const SizedBox(height: DesignTokens.s20),
 
-            // ── Sección: Renovación ───────────────────────────────────────
-            _SectionLabel('Renovación'),
+            // ── Sección: Fecha de renovación ───────────────────────────────────────
+            _SectionLabel('Fecha de renovación'),
             _FormCard(
               child: _FieldRow(
                 icon: Icons.calendar_month_rounded,
@@ -315,6 +445,92 @@ class _AddSubscriptionPageState extends ConsumerState<AddSubscriptionPage> {
                 ),
               ),
             ),
+            const SizedBox(height: DesignTokens.s20),
+
+            // ── Sección: Método de pago ──────────────────────────────────
+            _SectionLabel('Método de pago'),
+            _FormCard(
+              child: _FieldRow(
+                icon: Icons.credit_card_rounded,
+                child: DropdownButtonFormField<String>(
+                  // ignore: deprecated_member_use
+                  value: _selectedPaymentMethod,
+                  items: _paymentMethods
+                      .map((method) => DropdownMenuItem(
+                            value: method,
+                            child: Text(method),
+                          ))
+                      .toList(),
+                  onChanged: (value) {
+                    if (value != null) {
+                      setState(() => _selectedPaymentMethod = value);
+                    }
+                  },
+                  style: const TextStyle(
+                    fontFamily: DesignTokens.fontFamily,
+                    fontSize: 15,
+                    color: DesignTokens.textPrimary,
+                  ),
+                  decoration:
+                      _inputDecoration('Método de pago', hint: 'Selecciona el método'),
+                ),
+              ),
+            ),
+            const SizedBox(height: DesignTokens.s20),
+
+            // ── Sección: Notas (Opcional) ────────────────────────────────────────────
+            _SectionLabel('Notas (Opcional)'),
+            _FormCard(
+              child: _FieldRow(
+                icon: Icons.note_outlined,
+                child: TextFormField(
+                  controller: _notasCtrl,
+                  maxLines: 3,
+                  style: const TextStyle(
+                    fontFamily: DesignTokens.fontFamily,
+                    fontSize: 15,
+                    color: DesignTokens.textPrimary,
+                  ),
+                  decoration: _inputDecoration(
+                    'Notas',
+                    hint: 'Añade algo personal o recordatorio',
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: DesignTokens.s20),
+
+            // ── Sección: Repetir mensual ──────────────────────────────────
+            _FormCard(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: DesignTokens.s16,
+                  vertical: DesignTokens.s12,
+                ),
+                child: Row(
+                  children: [
+                    Checkbox(
+                      value: _repeatMonthly,
+                      onChanged: (value) {
+                        setState(() => _repeatMonthly = value ?? true);
+                      },
+                      activeColor: DesignTokens.primary,
+                    ),
+                    Expanded(
+                      child: Text(
+                        'Repetir mensual',
+                        style: const TextStyle(
+                          fontFamily: DesignTokens.fontFamily,
+                          fontSize: 14,
+                          fontWeight: DesignTokens.wMedium,
+                          color: DesignTokens.textPrimary,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
             const SizedBox(height: DesignTokens.s32),
 
             // ── Botón guardar ─────────────────────────────────────────────
@@ -342,9 +558,9 @@ class _AddSubscriptionPageState extends ConsumerState<AddSubscriptionPage> {
                               Colors.white),
                         ),
                       )
-                    : Text(
-                        widget.isEditing ? 'Guardar cambios' : 'Agregar suscripción',
-                        style: const TextStyle(
+                    : const Text(
+                        'Guardar suscripción',
+                        style: TextStyle(
                           fontFamily: DesignTokens.fontFamily,
                           fontSize: 15,
                           fontWeight: DesignTokens.wSemibold,
