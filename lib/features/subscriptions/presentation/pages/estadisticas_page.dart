@@ -375,8 +375,7 @@ class _ProximosVencimientos extends StatelessWidget {
       ...state.proximas,
     ]..sort((a, b) => a.fechaRenovacion.compareTo(b.fechaRenovacion));
 
-    // If no real data use mock items
-    final displayItems = items.isEmpty ? _mockItems() : items.take(5).toList();
+    final displayItems = items.take(5).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -391,45 +390,36 @@ class _ProximosVencimientos extends StatelessWidget {
           ),
         ),
         const SizedBox(height: DesignTokens.s12),
-        Container(
-          decoration: BoxDecoration(
-            color: _kCard,
-            borderRadius: BorderRadius.circular(DesignTokens.rL),
+        if (displayItems.isEmpty)
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: DesignTokens.s32),
+            child: Center(
+              child: Text(
+                'Sin vencimientos próximos',
+                style: TextStyle(
+                  fontFamily: DesignTokens.fontFamily,
+                  fontSize: 14,
+                  color: Colors.white.withValues(alpha: 0.45),
+                ),
+              ),
+            ),
+          )
+        else
+          Container(
+            decoration: BoxDecoration(
+              color: _kCard,
+              borderRadius: BorderRadius.circular(DesignTokens.rL),
+            ),
+            child: Column(
+              children: List.generate(displayItems.length, (i) {
+                final sub = displayItems[i];
+                final isLast = i == displayItems.length - 1;
+                return _VencimientoRow(subscription: sub, isLast: isLast);
+              }),
+            ),
           ),
-          child: Column(
-            children: List.generate(displayItems.length, (i) {
-              final sub = displayItems[i];
-              final isLast = i == displayItems.length - 1;
-              return _VencimientoRow(subscription: sub, isLast: isLast);
-            }),
-          ),
-        ),
       ],
     );
-  }
-
-  List<Subscription> _mockItems() {
-    final now = DateTime.now();
-    return [
-      Subscription(
-        id: 'mock1',
-        nombre: 'Spotify Premium',
-        precioActual: 37.57,
-        fechaRenovacion: now.add(const Duration(days: 3)),
-      ),
-      Subscription(
-        id: 'mock2',
-        nombre: 'Netflix Básico',
-        precioActual: 22.57,
-        fechaRenovacion: now.add(const Duration(days: 1)),
-      ),
-      Subscription(
-        id: 'mock3',
-        nombre: 'Disney+',
-        precioActual: 67.87,
-        fechaRenovacion: now.add(const Duration(days: 24)),
-      ),
-    ];
   }
 }
 
