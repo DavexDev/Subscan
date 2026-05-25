@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:subscan/core/theme/design_tokens.dart';
 import 'package:subscan/features/auth/auth_provider.dart';
 import 'package:subscan/features/subscriptions/providers/subscription_notifier_provider.dart';
+import 'package:subscan/features/tutorial/tutorial_provider.dart';
 import 'login_page.dart';
 
 const Color _kBg = Color(0xFF030B3F);
@@ -342,6 +343,12 @@ class _SettingsMenu extends StatelessWidget {
       subtitle: 'Descarga tus reportes de gastos',
     ),
     _MenuItem(
+      icon: Icons.play_circle_outline_rounded,
+      title: 'Tutorial interactivo',
+      subtitle: 'Repasa cómo usar la aplicación',
+      isTutorial: true,
+    ),
+    _MenuItem(
       icon: Icons.help_outline_rounded,
       title: 'Centro de ayuda',
       subtitle: 'Preguntas frecuentes y soporte',
@@ -375,11 +382,13 @@ class _MenuItem {
   final IconData icon;
   final String title;
   final String subtitle;
+  final bool isTutorial;
 
   const _MenuItem({
     required this.icon,
     required this.title,
     required this.subtitle,
+    this.isTutorial = false,
   });
 }
 
@@ -394,7 +403,13 @@ class _MenuRow extends StatelessWidget {
     return Column(
       children: [
         InkWell(
-          onTap: () {},
+          onTap: item.isTutorial
+              ? () {
+                  ProviderScope.containerOf(context)
+                      .read(tutorialStepProvider.notifier)
+                      .state = 0;
+                }
+              : () {},
           borderRadius: isLast
               ? const BorderRadius.only(
                   bottomLeft: Radius.circular(DesignTokens.rL),
