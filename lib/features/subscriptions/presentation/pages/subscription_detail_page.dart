@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:subscan/core/theme/design_tokens.dart';
 import 'package:subscan/features/subscriptions/models/subscription.dart';
+import 'package:subscan/features/subscriptions/presentation/pages/add_subscription_page.dart';
 import 'package:subscan/features/subscriptions/providers/subscription_notifier_provider.dart';
 
 const Color _kBg = Color(0xFF030B3F);
@@ -27,7 +28,18 @@ class SubscriptionDetailPage extends ConsumerWidget {
       backgroundColor: _kBg,
       body: CustomScrollView(
         slivers: [
-          _DarkDetailAppBar(subscription: current),
+          _DarkDetailAppBar(
+          subscription: current,
+          onEdit: () => Navigator.of(context).push(
+            PageRouteBuilder(
+              pageBuilder: (context, animation, _) =>
+                  AddSubscriptionPage(subscription: current),
+              transitionsBuilder: (_, anim, _, child) =>
+                  FadeTransition(opacity: anim, child: child),
+              transitionDuration: DesignTokens.animNormal,
+            ),
+          ),
+        ),
           SliverPadding(
             padding: const EdgeInsets.symmetric(horizontal: DesignTokens.s16),
             sliver: SliverList(
@@ -132,7 +144,8 @@ class SubscriptionDetailPage extends ConsumerWidget {
 
 class _DarkDetailAppBar extends StatelessWidget {
   final Subscription subscription;
-  const _DarkDetailAppBar({required this.subscription});
+  final VoidCallback onEdit;
+  const _DarkDetailAppBar({required this.subscription, required this.onEdit});
 
   @override
   Widget build(BuildContext context) {
@@ -148,12 +161,12 @@ class _DarkDetailAppBar extends StatelessWidget {
         onPressed: () => Navigator.pop(context),
       ),
       actions: [
-        CircleAvatar(
-          radius: 18,
-          backgroundColor: Colors.white.withValues(alpha: 0.15),
-          child: const Icon(Icons.person_rounded, color: Colors.white, size: 20),
+        IconButton(
+          icon: const Icon(Icons.edit_rounded, color: Colors.white, size: 22),
+          tooltip: 'Editar',
+          onPressed: onEdit,
         ),
-        const SizedBox(width: DesignTokens.s16),
+        const SizedBox(width: DesignTokens.s8),
       ],
     );
   }
