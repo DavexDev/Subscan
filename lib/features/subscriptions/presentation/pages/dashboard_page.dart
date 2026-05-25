@@ -4,6 +4,7 @@ import 'package:subscan/core/theme/design_tokens.dart';
 import 'package:subscan/features/auth/auth_provider.dart';
 import 'package:subscan/features/subscriptions/presentation/notifiers/subscription_notifier.dart';
 import 'package:subscan/features/subscriptions/presentation/pages/add_subscription_page.dart';
+import 'package:subscan/features/subscriptions/presentation/pages/subscription_detail_page.dart';
 import 'package:subscan/features/subscriptions/providers/subscription_notifier_provider.dart';
 
 /// Pantalla de inicio (Dashboard) con resumen de suscripciones
@@ -78,7 +79,7 @@ class DashboardPage extends ConsumerWidget {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                'Buenos días $displayName',
+                                '${_getGreeting()}, $displayName',
                                 style: const TextStyle(
                                   fontFamily: DesignTokens.fontFamily,
                                   fontSize: 18,
@@ -87,7 +88,7 @@ class DashboardPage extends ConsumerWidget {
                                 ),
                               ),
                               Text(
-                                _getTimeGreeting(),
+                                _getDateLabel(),
                                 style: TextStyle(
                                   fontFamily: DesignTokens.fontFamily,
                                   fontSize: 12,
@@ -152,8 +153,13 @@ class DashboardPage extends ConsumerWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   // PRÓXIMOS PAGOS section
-                  _ProximosPagosSection(state: state),
+                  _ProximosPagosSection(state: state, context: context),
                   const SizedBox(height: DesignTokens.s32),
+                  // SUSCRIPCIONES VENCIDAS section (only shown when there are expired subs)
+                  if (state.allSubscriptions.any((s) => s.isVencida)) ...[
+                    _VencidasSection(state: state, context: context),
+                    const SizedBox(height: DesignTokens.s32),
+                  ],
                   // SERVICIOS MÁS POPULARES section
                   _ServiciosPopularesSection(state: state),
                   const SizedBox(height: DesignTokens.s32),
@@ -232,27 +238,50 @@ class DashboardPage extends ConsumerWidget {
     }
   }
 
-  String _getTimeGreeting() {
+  String _getGreeting() {
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Buen inicio de día';
-    if (hour < 18) return 'Buena tarde';
+    if (hour < 12) return 'Buenos días';
+    if (hour < 18) return 'Buenas tardes';
     return 'Buenas noches';
+  }
+
+  String _getDateLabel() {
+    final now = DateTime.now();
+    const months = [
+      'enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio',
+      'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre',
+    ];
+    const weekdays = [
+      'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo',
+    ];
+    return '${weekdays[now.weekday - 1]} ${now.day} de ${months[now.month - 1]}';
   }
 }
 
 // ─── Secciones ───────────────────────────────────────────────────────────────
 
+void _openDetail(BuildContext context, sub) {
+  Navigator.of(context).push(PageRouteBuilder(
+    pageBuilder: (context, animation, _) =>
+        SubscriptionDetailPage(subscription: sub),
+    transitionsBuilder: (_, anim, _, child) =>
+        FadeTransition(opacity: anim, child: child),
+    transitionDuration: DesignTokens.animNormal,
+  ));
+}
+
 class _ProximosPagosSection extends StatelessWidget {
   final SubscriptionState state;
-  const _ProximosPagosSection({required this.state});
+  final BuildContext context;
+  const _ProximosPagosSection({required this.state, required this.context});
 
   @override
   Widget build(BuildContext context) {
-    // Combina urgentes + próximas + normales y toma las 2 con fecha más cercana
+    // Only non-expired subscriptions, sorted by next renewal date
     final allSorted = [
       ...state.urgentes,
       ...state.proximas,
-      ...state.normales,
+      ...state.normales.where((s) => !s.isVencida),
     ]..sort((a, b) => a.fechaRenovacion.compareTo(b.fechaRenovacion));
 
     final items = allSorted.take(2).toList();
@@ -300,21 +329,143 @@ class _ProximosPagosSection extends StatelessWidget {
         const SizedBox(height: DesignTokens.s12),
         ...items.map((sub) => Padding(
               padding: const EdgeInsets.only(bottom: DesignTokens.s12),
-              child: Container(
+              child: GestureDetector(
+                onTap: () => _openDetail(context, sub),
+                child: Container(
+                  padding: const EdgeInsets.all(DesignTokens.s12),
+                  decoration: BoxDecoration(
+                    color: DesignTokens.surface,
+                    borderRadius: BorderRadius.circular(DesignTokens.rM),
+                    border: Border.all(color: DesignTokens.divider),
+                  ),
+                  child: Row(
+                    children: [
+                      Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          color: DesignTokens.primary.withValues(alpha: 0.1),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Text(
+                            sub.nombre.isNotEmpty
+                                ? sub.nombre[0].toUpperCase()
+                                : '?',
+                            style: const TextStyle(
+                              fontFamily: DesignTokens.fontFamily,
+                              fontSize: 16,
+                              fontWeight: DesignTokens.wBold,
+                              color: DesignTokens.primary,
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: DesignTokens.s12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              sub.nombre,
+                              style: const TextStyle(
+                                fontFamily: DesignTokens.fontFamily,
+                                fontSize: 13,
+                                fontWeight: DesignTokens.wSemibold,
+                                color: DesignTokens.textPrimary,
+                              ),
+                            ),
+                            Text(
+                              _diasLabel(sub.diasRestantes),
+                              style: TextStyle(
+                                fontFamily: DesignTokens.fontFamily,
+                                fontSize: 11,
+                                color: sub.isUrgent
+                                    ? DesignTokens.error
+                                    : DesignTokens.textSecondary,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        color: DesignTokens.textSecondary,
+                        size: 18,
+                      ),
+                      Text(
+                        'Q${sub.precioActual.toStringAsFixed(2)}',
+                        style: const TextStyle(
+                          fontFamily: DesignTokens.fontFamily,
+                          fontSize: 14,
+                          fontWeight: DesignTokens.wBold,
+                          color: DesignTokens.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            )),
+      ],
+    );
+  }
+}
+
+String _diasLabel(int dias) {
+  if (dias == 0) return 'Vence hoy';
+  if (dias == 1) return 'Vence mañana';
+  return 'Vence en $dias días';
+}
+
+class _VencidasSection extends StatelessWidget {
+  final SubscriptionState state;
+  final BuildContext context;
+  const _VencidasSection({required this.state, required this.context});
+
+  @override
+  Widget build(BuildContext context) {
+    final vencidas = state.allSubscriptions
+        .where((s) => s.isVencida)
+        .toList()
+      ..sort((a, b) => a.fechaRenovacion.compareTo(b.fechaRenovacion));
+
+    if (vencidas.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'SUSCRIPCIONES VENCIDAS',
+          style: TextStyle(
+            fontFamily: DesignTokens.fontFamily,
+            fontSize: 12,
+            fontWeight: DesignTokens.wBold,
+            color: DesignTokens.error,
+            letterSpacing: 0.8,
+          ),
+        ),
+        const SizedBox(height: DesignTokens.s12),
+        ...vencidas.map((sub) => Padding(
+              padding: const EdgeInsets.only(bottom: DesignTokens.s12),
+              child: GestureDetector(
+                onTap: () => _openDetail(context, sub),
+                child: Container(
                 padding: const EdgeInsets.all(DesignTokens.s12),
                 decoration: BoxDecoration(
-                  color: DesignTokens.surface,
+                  color: DesignTokens.error.withValues(alpha: 0.08),
                   borderRadius: BorderRadius.circular(DesignTokens.rM),
-                  border: Border.all(color: DesignTokens.divider),
+                  border: Border.all(
+                    color: DesignTokens.error.withValues(alpha: 0.3),
+                  ),
                 ),
                 child: Row(
                   children: [
-                    // Service avatar
                     Container(
                       width: 40,
                       height: 40,
                       decoration: BoxDecoration(
-                        color: DesignTokens.primary.withValues(alpha: 0.1),
+                        color: DesignTokens.error.withValues(alpha: 0.15),
                         shape: BoxShape.circle,
                       ),
                       child: Center(
@@ -322,17 +473,16 @@ class _ProximosPagosSection extends StatelessWidget {
                           sub.nombre.isNotEmpty
                               ? sub.nombre[0].toUpperCase()
                               : '?',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: DesignTokens.fontFamily,
                             fontSize: 16,
                             fontWeight: DesignTokens.wBold,
-                            color: DesignTokens.primary,
+                            color: DesignTokens.error,
                           ),
                         ),
                       ),
                     ),
                     const SizedBox(width: DesignTokens.s12),
-                    // Service info
                     Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -347,28 +497,28 @@ class _ProximosPagosSection extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            'Días restantes: ${sub.diasRestantes}',
+                            'Venció hace ${sub.diasRestantes.abs()} día${sub.diasRestantes.abs() == 1 ? '' : 's'}',
                             style: TextStyle(
                               fontFamily: DesignTokens.fontFamily,
                               fontSize: 11,
-                              color: DesignTokens.textSecondary,
+                              color: DesignTokens.error,
                             ),
                           ),
                         ],
                       ),
                     ),
-                    // Price
                     Text(
                       'Q${sub.precioActual.toStringAsFixed(2)}',
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontFamily: DesignTokens.fontFamily,
                         fontSize: 14,
                         fontWeight: DesignTokens.wBold,
-                        color: DesignTokens.textPrimary,
+                        color: DesignTokens.error,
                       ),
                     ),
                   ],
                 ),
+              ),
               ),
             )),
       ],

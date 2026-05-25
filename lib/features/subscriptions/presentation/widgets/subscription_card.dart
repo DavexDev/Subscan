@@ -60,12 +60,14 @@ class SubscriptionCard extends StatelessWidget {
   }
 
   Color get _shadowColor {
+    if (subscription.diasRestantes < 0) return DesignTokens.error;
     if (subscription.isUrgent) return DesignTokens.error;
     if (subscription.isNearRenewal) return DesignTokens.warning;
     return DesignTokens.primary;
   }
 
   Color get _borderColor {
+    if (subscription.diasRestantes < 0) return DesignTokens.error;
     if (subscription.isUrgent) return DesignTokens.error;
     if (subscription.isNearRenewal) return DesignTokens.warning;
     return DesignTokens.divider;
@@ -152,6 +154,29 @@ class _StatusChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (subscription.diasRestantes < 0) {
+      return Container(
+        padding: const EdgeInsets.symmetric(
+          horizontal: DesignTokens.s8,
+          vertical: DesignTokens.s4,
+        ),
+        decoration: BoxDecoration(
+          color: DesignTokens.error.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(DesignTokens.rFull),
+          border: Border.all(color: DesignTokens.error.withValues(alpha: 0.5)),
+        ),
+        child: Text(
+          'VENCIDA',
+          style: TextStyle(
+            color: DesignTokens.error,
+            fontSize: 10,
+            fontWeight: DesignTokens.wBold,
+            fontFamily: DesignTokens.fontFamily,
+            letterSpacing: 0.5,
+          ),
+        ),
+      );
+    }
     if (subscription.isUrgent) {
       return Container(
         padding: const EdgeInsets.symmetric(
@@ -207,11 +232,13 @@ class _RenewalBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dias = subscription.diasRestantes;
-    final color = subscription.isUrgent
+    final color = dias < 0
         ? DesignTokens.error
-        : subscription.isNearRenewal
-            ? DesignTokens.warning
-            : DesignTokens.success;
+        : subscription.isUrgent
+            ? DesignTokens.error
+            : subscription.isNearRenewal
+                ? DesignTokens.warning
+                : DesignTokens.success;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -220,9 +247,11 @@ class _RenewalBar extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Text(
-              dias <= 0
-                  ? 'Vence hoy'
-                  : 'Renueva en $dias ${dias == 1 ? 'día' : 'días'}',
+              dias < 0
+                  ? 'Venció hace ${dias.abs()} ${dias.abs() == 1 ? 'día' : 'días'}'
+                  : dias == 0
+                      ? 'Vence hoy'
+                      : 'Renueva en $dias ${dias == 1 ? 'día' : 'días'}',
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: color,
                     fontWeight: DesignTokens.wSemibold,
