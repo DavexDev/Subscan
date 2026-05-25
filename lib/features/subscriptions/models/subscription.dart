@@ -6,6 +6,7 @@ class Subscription {
   final double? precioOriginal;
   final DateTime fechaRenovacion;
   final String fuente;
+  final String currency; // 'GTQ', 'USD', 'EUR', 'MXN', 'GBP'
   final DateTime createdAt;
 
   Subscription({
@@ -15,19 +16,36 @@ class Subscription {
     this.precioOriginal,
     required this.fechaRenovacion,
     this.fuente = 'manual',
+    this.currency = 'GTQ',
     DateTime? createdAt,
   }) : createdAt = createdAt ?? DateTime.now();
 
-  /// Días restantes hasta renovación
+  String get currencySymbol {
+    switch (currency) {
+      case 'USD': return '\$';
+      case 'EUR': return '€';
+      case 'MXN': return 'MX\$';
+      case 'GBP': return '£';
+      default: return 'Q';
+    }
+  }
+
+  String get precioFormateado =>
+      '$currencySymbol${precioActual.toStringAsFixed(2)}';
+
+  /// Días restantes hasta renovación (negativo = ya venció)
   int get diasRestantes {
     return fechaRenovacion.difference(DateTime.now()).inDays;
   }
 
-  /// ¿Es urgente? (menos de 3 días)
-  bool get isUrgent => diasRestantes <= 3;
+  /// ¿Ya venció? (fecha de renovación en el pasado)
+  bool get isVencida => diasRestantes < 0;
 
-  /// ¿Está próximo a renovarse? (menos de 7 días)
-  bool get isNearRenewal => diasRestantes <= 7;
+  /// ¿Es urgente? (0–3 días, sin incluir vencidas)
+  bool get isUrgent => diasRestantes >= 0 && diasRestantes <= 3;
+
+  /// ¿Está próximo a renovarse? (0–7 días, sin incluir vencidas)
+  bool get isNearRenewal => diasRestantes >= 0 && diasRestantes <= 7;
 
   /// Retorna copia con cambios
   Subscription copyWith({
@@ -37,6 +55,7 @@ class Subscription {
     double? precioOriginal,
     DateTime? fechaRenovacion,
     String? fuente,
+    String? currency,
     DateTime? createdAt,
   }) {
     return Subscription(
@@ -46,6 +65,7 @@ class Subscription {
       precioOriginal: precioOriginal ?? this.precioOriginal,
       fechaRenovacion: fechaRenovacion ?? this.fechaRenovacion,
       fuente: fuente ?? this.fuente,
+      currency: currency ?? this.currency,
       createdAt: createdAt ?? this.createdAt,
     );
   }
