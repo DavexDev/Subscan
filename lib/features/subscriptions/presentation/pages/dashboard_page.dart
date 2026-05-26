@@ -6,6 +6,7 @@ import 'package:subscan/features/auth/auth_provider.dart';
 import 'package:subscan/features/subscriptions/models/subscription.dart';
 import 'package:subscan/features/subscriptions/presentation/notifiers/subscription_notifier.dart';
 import 'package:subscan/features/subscriptions/presentation/pages/add_subscription_page.dart';
+import 'package:subscan/features/subscriptions/presentation/pages/gmail_sync_overlay_page.dart';
 import 'package:subscan/features/subscriptions/presentation/pages/subscription_detail_page.dart';
 import 'package:subscan/features/subscriptions/providers/subscription_notifier_provider.dart';
 
@@ -40,9 +41,10 @@ class DashboardPage extends ConsumerWidget {
     final displayName = user?.displayName?.split(' ').first ?? 'Usuario';
     final photoUrl = user?.photoURL;
 
-    final gastoMensual = state.allSubscriptions
-        .where((s) => !s.isVencida)
-        .fold<double>(0, (s, sub) => s + sub.precioActual);
+    final gastoPorMoneda = <String, double>{};
+    for (final s in state.allSubscriptions.where((s) => !s.isVencida)) {
+      gastoPorMoneda[s.currency] = (gastoPorMoneda[s.currency] ?? 0) + s.precioActual;
+    }
 
     return Scaffold(
       backgroundColor: _kBg,
@@ -68,7 +70,7 @@ class DashboardPage extends ConsumerWidget {
               padding: const EdgeInsets.fromLTRB(DesignTokens.s20,
                   DesignTokens.s16, DesignTokens.s20, 0),
               child: _SummaryCard(
-                gastoMensual: gastoMensual,
+                gastoPorMoneda: gastoPorMoneda,
                 totalSubs: state.allSubscriptions.where((s) => !s.isVencida).length,
                 vencidas: state.allSubscriptions.where((s) => s.isVencida).length,
               ),
@@ -141,19 +143,14 @@ class DashboardPage extends ConsumerWidget {
   }
 
   Future<void> _syncGmail(BuildContext context, WidgetRef ref) async {
-    await ref.read(subscriptionNotifierProvider.notifier).syncGmail();
-    if (context.mounted) {
-      final error = ref.read(subscriptionNotifierProvider).error;
-      if (error == null) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Gmail sincronizado ✅'),
-            backgroundColor: DesignTokens.success,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
-      }
-    }
+    await Navigator.of(context).push(
+      PageRouteBuilder(
+        pageBuilder: (context, animation, _) => const GmailSyncOverlayPage(),
+        transitionsBuilder: (_, anim, __, child) =>
+            FadeTransition(opacity: anim, child: child),
+        transitionDuration: DesignTokens.animNormal,
+      ),
+    );
   }
 
   static String _greeting() {
@@ -258,13 +255,23 @@ class _Avatar extends StatelessWidget {
 
 // ─── Summary card ─────────────────────────────────────────────────────────────
 
+String _currencySymbol(String code) {
+  switch (code) {
+    case 'USD': return '\$';
+    case 'EUR': return '€';
+    case 'MXN': return 'MX\$';
+    case 'GBP': return '£';
+    default: return 'Q';
+  }
+}
+
 class _SummaryCard extends StatelessWidget {
-  final double gastoMensual;
+  final Map<String, double> gastoPorMoneda;
   final int totalSubs;
   final int vencidas;
 
   const _SummaryCard({
-    required this.gastoMensual,
+    required this.gastoPorMoneda,
     required this.totalSubs,
     required this.vencidas,
   });
@@ -294,16 +301,58 @@ class _SummaryCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: DesignTokens.s6),
-          Text(
-            'Q${gastoMensual.toStringAsFixed(2)}',
-            style: const TextStyle(
-              fontFamily: DesignTokens.fontFamily,
-              fontSize: 36,
-              fontWeight: DesignTokens.wBold,
-              color: Colors.white,
-              height: 1.1,
+          if (gastoPorMoneda.isEmpty)
+            const Text(
+              'Q0.00',
+              style: TextStyle(
+                fontFamily: DesignTokens.fontFamily,
+                fontSize: 36,
+                fontWeight: DesignTokens.wBold,
+                color: Colors.white,
+                height: 1.1,
+              ),
+            )
+          else if (gastoPorMoneda.length == 1)
+            Text(
+              '${_currencySymbol(gastoPorMoneda.keys.first)}${gastoPorMoneda.values.first.toStringAsFixed(2)}',
+              style: const TextStyle(
+                fontFamily: DesignTokens.fontFamily,
+                fontSize: 36,
+                fontWeight: DesignTokens.wBold,
+                color: Colors.white,
+                height: 1.1,
+              ),
+            )
+          else
+            Wrap(
+              spacing: DesignTokens.s16,
+              runSpacing: DesignTokens.s4,
+              children: gastoPorMoneda.entries.map((e) => Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(
+                    '${_currencySymbol(e.key)}${e.value.toStringAsFixed(2)}',
+                    style: const TextStyle(
+                      fontFamily: DesignTokens.fontFamily,
+                      fontSize: 26,
+                      fontWeight: DesignTokens.wBold,
+                      color: Colors.white,
+                      height: 1.1,
+                    ),
+                  ),
+                  Text(
+                    e.key,
+                    style: TextStyle(
+                      fontFamily: DesignTokens.fontFamily,
+                      fontSize: 10,
+                      color: Colors.white.withValues(alpha: 0.5),
+                      letterSpacing: 0.5,
+                    ),
+                  ),
+                ],
+              )).toList(),
             ),
-          ),
           const SizedBox(height: DesignTokens.s16),
           Row(
             children: [
@@ -510,7 +559,7 @@ class _ProximoCard extends StatelessWidget {
             ServiceLogo(name: sub.nombre, size: 44),
             const SizedBox(height: DesignTokens.s8),
             Text(
-              'Q${sub.precioActual.toStringAsFixed(2)}',
+              sub.precioFormateado,
               style: const TextStyle(
                 fontFamily: DesignTokens.fontFamily,
                 fontSize: 18,
@@ -631,7 +680,7 @@ class _VencidasSection extends StatelessWidget {
                         ),
                       ),
                       Text(
-                        'Q${sub.precioActual.toStringAsFixed(2)}',
+                        sub.precioFormateado,
                         style: TextStyle(
                           fontFamily: DesignTokens.fontFamily,
                           fontSize: 14,
@@ -690,7 +739,7 @@ class _ServiciosPopularesRow extends StatelessWidget {
                 : () => Navigator.of(context).push(
                       PageRouteBuilder(
                         pageBuilder: (_, __, ___) =>
-                            const AddSubscriptionPage(),
+                            AddSubscriptionPage(preselectedService: service),
                         transitionsBuilder: (_, anim, __, child) =>
                             FadeTransition(opacity: anim, child: child),
                         transitionDuration: DesignTokens.animNormal,
@@ -844,7 +893,7 @@ class _AumentoPreciosRow extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Q${sub.precioActual.toStringAsFixed(2)}',
+                            sub.precioFormateado,
                             style: TextStyle(
                               fontFamily: DesignTokens.fontFamily,
                               fontSize: 10,
@@ -853,7 +902,7 @@ class _AumentoPreciosRow extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            'Q${sub.precioOriginal!.toStringAsFixed(2)}',
+                            '${sub.currencySymbol}${sub.precioOriginal!.toStringAsFixed(2)}',
                             style: const TextStyle(
                               fontFamily: DesignTokens.fontFamily,
                               fontSize: 13,

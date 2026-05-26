@@ -41,7 +41,7 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
   }
 
   @override
-  Future<List<Subscription>> syncWithGmail() async {
+  Future<List<Subscription>> syncWithGmail({String? accessToken, String? emailHint}) async {
     // Step 1: deduplicate ALL existing DB entries regardless of Gmail results
     final existing = await datasource.getSubscriptions();
     final existingByName = <String, List<Subscription>>{};
@@ -57,8 +57,8 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
       }
     }
 
-    // Step 2: fetch Gmail subscriptions
-    final gmailDatasource = GmailDatasource();
+    // Step 2: fetch Gmail subscriptions para la cuenta dada
+    final gmailDatasource = GmailDatasource(accessToken: accessToken, emailHint: emailHint);
     final imported = await gmailDatasource.getSubscriptions();
     if (imported.isEmpty) return [];
 
@@ -82,6 +82,7 @@ class SubscriptionRepositoryImpl implements SubscriptionRepository {
           precioActual: imp.precioActual,
           fechaRenovacion: imp.fechaRenovacion,
           currency: imp.currency,
+          emailCuenta: imp.emailCuenta,
         ));
       }
     }

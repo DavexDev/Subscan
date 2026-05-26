@@ -1,4 +1,6 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:subscan/features/auth/models/linked_account.dart';
 import 'package:subscan/features/subscriptions/domain/repositories/subscription_repository.dart';
 import 'package:subscan/features/subscriptions/models/subscription.dart';
 
@@ -7,11 +9,13 @@ class SubscriptionState {
   final List<Subscription> allSubscriptions;
   final bool isLoading;
   final String? error;
+  final String? syncingEmail; // cuenta Gmail sincronizando actualmente
 
   const SubscriptionState({
     this.allSubscriptions = const [],
     this.isLoading = false,
     this.error,
+    this.syncingEmail,
   });
 
   /// Suscripciones urgentes (≤3 días)
@@ -31,11 +35,14 @@ class SubscriptionState {
     List<Subscription>? allSubscriptions,
     bool? isLoading,
     String? error,
+    String? syncingEmail,
+    bool clearSyncingEmail = false,
   }) {
     return SubscriptionState(
       allSubscriptions: allSubscriptions ?? this.allSubscriptions,
       isLoading: isLoading ?? this.isLoading,
-      error: error,  // null limpia el error anterior intencionalmente
+      error: error,
+      syncingEmail: clearSyncingEmail ? null : (syncingEmail ?? this.syncingEmail),
     );
   }
 }
@@ -115,7 +122,53 @@ class SubscriptionNotifier extends StateNotifier<SubscriptionState> {
     }
   }
 
-  /// Sincroniza suscripciones desde Gmail y agrega las nuevas (deduplicadas).
+  /// Sincroniza una cuenta Gmail usando su access token guardado.
+  /// Devuelve cuántas subs nuevas se encontraron.
+  Future<int> syncGmailAccount(LinkedAccount account) async {
+    debugPrint('[Sync] Iniciando sync para ${account.email} (token: ${account.accessToken?.isNotEmpty == true ? "OK" : "VACÍO"})');
+    try {
+      final imported = await _repository.syncWithGmail(
+        accessToken: account.accessToken,
+        emailHint: account.email,
+      );
+      debugPrint('[Sync] ${account.email} → ${imported.length} importados');
+      final existing = state.allSubscriptions
+          .map((s) => s.nombre.toLowerCase())
+          .toSet();
+      final newOnes = imported
+          .where((s) => !existing.contains(s.nombre.toLowerCase()))
+          .toList();
+      if (newOnes.isNotEmpty) {
+        state = state.copyWith(
+          allSubscriptions: [...state.allSubscriptions, ...newOnes],
+        );
+      }
+      debugPrint('[Sync] ${account.email} → ${newOnes.length} nuevas subs');
+      return newOnes.length;
+    } catch (e) {
+      debugPrint('[Sync] ERROR en ${account.email}: $e');
+      state = state.copyWith(error: e.toString());
+      return 0;
+    }
+  }
+
+  /// Sincroniza todas las cuentas vinculadas EN PARALELO.
+  /// Devuelve un mapa email → cantidad de subs nuevas.
+  Future<Map<String, int>> syncAllGmailAccounts(
+      List<LinkedAccount> accounts) async {
+    state = state.copyWith(isLoading: true);
+    final futures = accounts.map((a) async {
+      final count = await syncGmailAccount(a);
+      return MapEntry(a.email, count);
+    });
+    final entries = await Future.wait(futures);
+    final results = Map.fromEntries(entries);
+    state = state.copyWith(isLoading: false, clearSyncingEmail: true);
+    await loadSubscriptions();
+    return results;
+  }
+
+  /// Sincroniza suscripciones desde Gmail (cuenta activa, sin token guardado).
   Future<void> syncGmail() async {
     state = state.copyWith(isLoading: true);
     try {

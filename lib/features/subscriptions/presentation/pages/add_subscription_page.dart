@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:subscan/core/services/known_services.dart';
 import 'package:subscan/core/theme/design_tokens.dart';
+import 'package:subscan/core/widgets/service_logo.dart';
 import 'package:subscan/features/subscriptions/models/subscription.dart';
 import 'package:subscan/features/subscriptions/providers/subscription_notifier_provider.dart';
 
@@ -11,8 +13,9 @@ import 'package:subscan/features/subscriptions/providers/subscription_notifier_p
 /// - Sin [subscription] → modo creación.
 class AddSubscriptionPage extends ConsumerStatefulWidget {
   final Subscription? subscription;
+  final String? preselectedService;
 
-  const AddSubscriptionPage({super.key, this.subscription});
+  const AddSubscriptionPage({super.key, this.subscription, this.preselectedService});
 
   bool get isEditing => subscription != null;
 
@@ -34,6 +37,16 @@ class _AddSubscriptionPageState extends ConsumerState<AddSubscriptionPage> {
   late bool _repeatMonthly;
 
   bool _saving = false;
+  String? _selectedServiceName; // set only when user picks from autocomplete
+  late String _selectedCurrency;
+
+  static const List<({String code, String label})> _currencies = [
+    (code: 'GTQ', label: 'Q — Quetzal'),
+    (code: 'USD', label: '\$ — Dólar USD'),
+    (code: 'EUR', label: '€ — Euro'),
+    (code: 'MXN', label: 'MX\$ — Peso MXN'),
+    (code: 'GBP', label: '£ — Libra GBP'),
+  ];
 
   static const List<String> _categories = [
     'Entretenimiento',
@@ -60,7 +73,14 @@ class _AddSubscriptionPageState extends ConsumerState<AddSubscriptionPage> {
   void initState() {
     super.initState();
     final s = widget.subscription;
-    _nombreCtrl = TextEditingController(text: s?.nombre ?? '');
+    final preservice = widget.preselectedService;
+    _nombreCtrl = TextEditingController(
+        text: s?.nombre ?? preservice ?? '');
+    if (s != null && kKnownServiceNames.contains(s.nombre)) {
+      _selectedServiceName = s.nombre;
+    } else if (preservice != null) {
+      _selectedServiceName = preservice;
+    }
     _precioCtrl = TextEditingController(
       text: s != null ? s.precioActual.toStringAsFixed(2) : '',
     );
@@ -72,7 +92,14 @@ class _AddSubscriptionPageState extends ConsumerState<AddSubscriptionPage> {
     _notasCtrl = TextEditingController();
     _fechaRenovacion =
         s?.fechaRenovacion ?? DateTime.now().add(const Duration(days: 30));
-    _selectedCategory = _categories[0];
+    final autoCategory = _selectedServiceName != null
+        ? kServiceCategories[_selectedServiceName]
+        : null;
+    _selectedCategory =
+        (autoCategory != null && _categories.contains(autoCategory))
+            ? autoCategory
+            : _categories[0];
+    _selectedCurrency = s?.currency ?? 'GTQ';
     _selectedPaymentMethod = _paymentMethods[0];
     _repeatMonthly = true;
   }
@@ -87,6 +114,28 @@ class _AddSubscriptionPageState extends ConsumerState<AddSubscriptionPage> {
   }
 
   // ─── Acciones ────────────────────────────────────────────────────────────────
+
+  Future<void> _showServicePicker() async {
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: DesignTokens.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => const _ServicePickerSheet(),
+    );
+    if (selected != null && mounted) {
+      setState(() {
+        _selectedServiceName = selected;
+        _nombreCtrl.text = selected;
+        final category = kServiceCategories[selected];
+        if (category != null && _categories.contains(category)) {
+          _selectedCategory = category;
+        }
+      });
+    }
+  }
 
   Future<void> _pickDate() async {
     final picked = await showDatePicker(
@@ -131,6 +180,7 @@ class _AddSubscriptionPageState extends ConsumerState<AddSubscriptionPage> {
       precioOriginal: precioOriginal,
       fechaRenovacion: _fechaRenovacion,
       fuente: widget.subscription?.fuente ?? 'manual',
+      currency: _selectedCurrency,
       createdAt: widget.subscription?.createdAt ?? DateTime.now(),
     );
 
@@ -211,51 +261,73 @@ class _AddSubscriptionPageState extends ConsumerState<AddSubscriptionPage> {
         child: ListView(
           padding: const EdgeInsets.all(DesignTokens.s20),
           children: [
-            // ── Sección: Icono de la app ──────────────────────────────────────
-            _SectionLabel('Icono de la app'),
-            _FormCard(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: DesignTokens.s16,
-                  vertical: DesignTokens.s20,
-                ),
-                child: Center(
-                  child: Column(
+            // ── Sección: Servicio (logo + picker) ────────────────────────────
+            _SectionLabel('Servicio'),
+            GestureDetector(
+              onTap: _showServicePicker,
+              child: _FormCard(
+                child: Padding(
+                  padding: const EdgeInsets.all(DesignTokens.s16),
+                  child: Row(
                     children: [
-                      Container(
-                        width: 80,
-                        height: 80,
-                        decoration: BoxDecoration(
-                          color: DesignTokens.surfaceVariant,
-                          borderRadius: BorderRadius.circular(DesignTokens.rM),
-                          border: Border.all(
-                            color: DesignTokens.divider,
-                            strokeAlign: BorderSide.strokeAlignOutside,
-                          ),
-                        ),
-                        child: const Icon(
-                          Icons.image_outlined,
-                          size: 40,
-                          color: DesignTokens.textSecondary,
+                      _selectedServiceName != null
+                          ? ServiceLogo(
+                              name: _selectedServiceName!, size: 56)
+                          : Container(
+                              width: 56,
+                              height: 56,
+                              decoration: BoxDecoration(
+                                color: DesignTokens.surfaceVariant,
+                                borderRadius: BorderRadius.circular(
+                                    DesignTokens.rM),
+                                border:
+                                    Border.all(color: DesignTokens.divider),
+                              ),
+                              child: const Icon(
+                                Icons.apps_rounded,
+                                size: 28,
+                                color: DesignTokens.textSecondary,
+                              ),
+                            ),
+                      const SizedBox(width: DesignTokens.s12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              _selectedServiceName ??
+                                  'Elegir servicio popular',
+                              style: TextStyle(
+                                fontFamily: DesignTokens.fontFamily,
+                                fontSize: 15,
+                                fontWeight: _selectedServiceName != null
+                                    ? DesignTokens.wSemibold
+                                    : DesignTokens.wRegular,
+                                color: _selectedServiceName != null
+                                    ? DesignTokens.textPrimary
+                                    : DesignTokens.primary,
+                              ),
+                            ),
+                            if (_selectedServiceName == null)
+                              Text(
+                                'Netflix, Spotify, Disney+…',
+                                style: TextStyle(
+                                  fontFamily: DesignTokens.fontFamily,
+                                  fontSize: 12,
+                                  color: DesignTokens.textSecondary,
+                                ),
+                              ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: DesignTokens.s12),
-                      Text(
-                        'Toca para agregar el logo',
-                        style: TextStyle(
-                          fontFamily: DesignTokens.fontFamily,
-                          fontSize: 13,
-                          fontWeight: DesignTokens.wMedium,
-                          color: DesignTokens.primary,
-                        ),
-                      ),
-                      Text(
-                        'JPG, PNG',
-                        style: TextStyle(
-                          fontFamily: DesignTokens.fontFamily,
-                          fontSize: 11,
-                          color: DesignTokens.textSecondary,
-                        ),
+                      Icon(
+                        _selectedServiceName != null
+                            ? Icons.check_circle_rounded
+                            : Icons.chevron_right_rounded,
+                        color: _selectedServiceName != null
+                            ? DesignTokens.success
+                            : DesignTokens.textSecondary,
+                        size: 22,
                       ),
                     ],
                   ),
@@ -264,31 +336,33 @@ class _AddSubscriptionPageState extends ConsumerState<AddSubscriptionPage> {
             ),
             const SizedBox(height: DesignTokens.s20),
 
-            // ── Sección: Nombre de la suscripción ─────────────────────────────────────────
+            // ── Sección: Nombre de la suscripción ─────────────────────────────
             _SectionLabel('Nombre de la suscripción'),
             _FormCard(
-              child: Column(
-                children: [
-                  _FieldRow(
-                    icon: Icons.label_outline_rounded,
-                    child: TextFormField(
-                      controller: _nombreCtrl,
-                      textCapitalization: TextCapitalization.words,
-                      style: const TextStyle(
-                        fontFamily: DesignTokens.fontFamily,
-                        fontSize: 15,
-                        color: DesignTokens.textPrimary,
-                      ),
-                      decoration: _inputDecoration(
-                        'Nombre de la suscripción',
-                        hint: 'Ej. Spotify',
-                      ),
-                      validator: (v) => (v == null || v.trim().isEmpty)
-                          ? 'Ingresa el nombre'
-                          : null,
-                    ),
+              child: _FieldRow(
+                icon: Icons.label_outline_rounded,
+                child: TextFormField(
+                  controller: _nombreCtrl,
+                  textCapitalization: TextCapitalization.words,
+                  style: const TextStyle(
+                    fontFamily: DesignTokens.fontFamily,
+                    fontSize: 15,
+                    color: DesignTokens.textPrimary,
                   ),
-                ],
+                  decoration: _inputDecoration(
+                    'Nombre de la suscripción',
+                    hint: 'Ej. Spotify o nombre personalizado',
+                  ),
+                  onChanged: (value) {
+                    if (_selectedServiceName != null &&
+                        value != _selectedServiceName) {
+                      setState(() => _selectedServiceName = null);
+                    }
+                  },
+                  validator: (v) => (v == null || v.trim().isEmpty)
+                      ? 'Ingresa el nombre'
+                      : null,
+                ),
               ),
             ),
             const SizedBox(height: DesignTokens.s20),
@@ -356,6 +430,28 @@ class _AddSubscriptionPageState extends ConsumerState<AddSubscriptionPage> {
                         }
                         return null;
                       },
+                    ),
+                  ),
+                  _Divider(),
+                  _FieldRow(
+                    icon: Icons.language_rounded,
+                    child: DropdownButtonFormField<String>(
+                      value: _selectedCurrency,
+                      items: _currencies
+                          .map((c) => DropdownMenuItem(
+                                value: c.code,
+                                child: Text(c.label),
+                              ))
+                          .toList(),
+                      onChanged: (value) {
+                        if (value != null) setState(() => _selectedCurrency = value);
+                      },
+                      style: const TextStyle(
+                        fontFamily: DesignTokens.fontFamily,
+                        fontSize: 15,
+                        color: DesignTokens.textPrimary,
+                      ),
+                      decoration: _inputDecoration('Moneda', hint: 'GTQ'),
                     ),
                   ),
                   _Divider(),
@@ -701,6 +797,144 @@ class _Divider extends StatelessWidget {
       height: 1,
       indent: DesignTokens.s16 + 18 + DesignTokens.s12,
       color: DesignTokens.divider,
+    );
+  }
+}
+
+// ─── Bottom sheet de servicios populares ─────────────────────────────────────
+
+class _ServicePickerSheet extends StatefulWidget {
+  const _ServicePickerSheet();
+
+  @override
+  State<_ServicePickerSheet> createState() => _ServicePickerSheetState();
+}
+
+class _ServicePickerSheetState extends State<_ServicePickerSheet> {
+  final _searchCtrl = TextEditingController();
+  List<String> _filtered = kKnownServiceNames;
+
+  @override
+  void initState() {
+    super.initState();
+    _searchCtrl.addListener(() {
+      final q = _searchCtrl.text.toLowerCase();
+      setState(() {
+        _filtered = q.isEmpty
+            ? kKnownServiceNames
+            : kKnownServiceNames
+                .where((s) => s.toLowerCase().contains(q))
+                .toList();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchCtrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return DraggableScrollableSheet(
+      initialChildSize: 0.75,
+      minChildSize: 0.5,
+      maxChildSize: 0.92,
+      expand: false,
+      builder: (_, scrollCtrl) => Column(
+        children: [
+          // Handle
+          const SizedBox(height: 12),
+          Container(
+            width: 40,
+            height: 4,
+            decoration: BoxDecoration(
+              color: DesignTokens.divider,
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: DesignTokens.s16),
+            child: Text(
+              'Servicios populares',
+              style: const TextStyle(
+                fontFamily: DesignTokens.fontFamily,
+                fontSize: 17,
+                fontWeight: DesignTokens.wBold,
+                color: DesignTokens.textPrimary,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          // Buscador
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: DesignTokens.s16),
+            child: TextField(
+              controller: _searchCtrl,
+              autofocus: true,
+              style: const TextStyle(
+                fontFamily: DesignTokens.fontFamily,
+                fontSize: 14,
+                color: DesignTokens.textPrimary,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Buscar servicio...',
+                hintStyle: TextStyle(
+                  fontFamily: DesignTokens.fontFamily,
+                  color: DesignTokens.textDisabled,
+                ),
+                prefixIcon: const Icon(Icons.search_rounded,
+                    color: DesignTokens.textSecondary),
+                filled: true,
+                fillColor: DesignTokens.surfaceVariant,
+                contentPadding:
+                    const EdgeInsets.symmetric(vertical: 10),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(DesignTokens.rM),
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(height: 8),
+          // Lista
+          Expanded(
+            child: ListView.builder(
+              controller: scrollCtrl,
+              itemCount: _filtered.length,
+              itemBuilder: (_, i) {
+                final name = _filtered[i];
+                return InkWell(
+                  onTap: () => Navigator.of(context).pop(name),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: DesignTokens.s20,
+                      vertical: DesignTokens.s12,
+                    ),
+                    child: Row(
+                      children: [
+                        ServiceLogo(name: name, size: 36),
+                        const SizedBox(width: DesignTokens.s16),
+                        Text(
+                          name,
+                          style: const TextStyle(
+                            fontFamily: DesignTokens.fontFamily,
+                            fontSize: 15,
+                            fontWeight: DesignTokens.wMedium,
+                            color: DesignTokens.textPrimary,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }

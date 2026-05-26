@@ -55,7 +55,9 @@ class SupabaseSubscriptionDatasource implements SubscriptionDatasource {
           : null,
       fechaRenovacion: DateTime.parse(row['fecha_renovacion'] as String),
       fuente: row['fuente'] as String? ?? 'manual',
+      currency: row['currency'] as String? ?? 'GTQ',
       createdAt: DateTime.parse(row['created_at'] as String),
+      emailCuenta: row['email_cuenta'] as String?,
     );
   }
 
@@ -68,6 +70,8 @@ class SupabaseSubscriptionDatasource implements SubscriptionDatasource {
       'precio_original': s.precioOriginal,
       'fecha_renovacion': s.fechaRenovacion.toIso8601String(),
       'fuente': s.fuente,
+      'currency': s.currency,
+      'email_cuenta': s.emailCuenta,
     };
   }
 }

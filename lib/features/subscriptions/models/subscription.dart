@@ -8,6 +8,7 @@ class Subscription {
   final String fuente;
   final String currency; // 'GTQ', 'USD', 'EUR', 'MXN', 'GBP'
   final DateTime createdAt;
+  final String? emailCuenta; // cuenta Gmail que originó esta suscripción
 
   Subscription({
     required this.id,
@@ -18,6 +19,7 @@ class Subscription {
     this.fuente = 'manual',
     this.currency = 'GTQ',
     DateTime? createdAt,
+    this.emailCuenta,
   }) : createdAt = createdAt ?? DateTime.now();
 
   String get currencySymbol {
@@ -57,6 +59,7 @@ class Subscription {
     String? fuente,
     String? currency,
     DateTime? createdAt,
+    String? emailCuenta,
   }) {
     return Subscription(
       id: id ?? this.id,
@@ -67,6 +70,7 @@ class Subscription {
       fuente: fuente ?? this.fuente,
       currency: currency ?? this.currency,
       createdAt: createdAt ?? this.createdAt,
+      emailCuenta: emailCuenta ?? this.emailCuenta,
     );
   }
 
