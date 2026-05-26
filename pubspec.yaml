@@ -44,6 +44,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   video_player: ^2.11.1
   flutter_dotenv: ^5.1.0
+  url_launcher: ^6.2.0
   cached_network_image: ^3.4.1
 
 dependency_overrides:
@@ -80,6 +81,7 @@ flutter:
     - assets/videos/
     - assets/images/
     - assets/images/onboarding/
+    - assets/logos/
     - .env
 
   # An image asset can refer to one or more resolution-specific "variants", see

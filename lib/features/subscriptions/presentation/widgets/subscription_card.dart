@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:subscan/core/theme/design_tokens.dart';
+import 'package:subscan/core/widgets/service_logo.dart';
 import 'package:subscan/features/subscriptions/models/subscription.dart';
 
 /// Card que representa una suscripción en la lista del dashboard.
@@ -82,30 +83,7 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        // Ícono de servicio
-        Container(
-          width: 48,
-          height: 48,
-          decoration: BoxDecoration(
-            gradient: subscription.isUrgent
-                ? DesignTokens.urgentGradient
-                : DesignTokens.headerGradient,
-            borderRadius: BorderRadius.circular(DesignTokens.rM),
-          ),
-          child: Center(
-            child: Text(
-              subscription.nombre.isEmpty
-                  ? '?'
-                  : subscription.nombre[0].toUpperCase(),
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 20,
-                fontWeight: DesignTokens.wBold,
-                fontFamily: DesignTokens.fontFamily,
-              ),
-            ),
-          ),
-        ),
+        ServiceLogo(name: subscription.nombre, size: 48),
         const SizedBox(width: DesignTokens.s12),
         Expanded(
           child: Column(

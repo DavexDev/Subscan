@@ -18,6 +18,7 @@ abstract class SubscriptionRepository {
   /// Elimina una suscripción por ID
   Future<void> deleteSubscription(String id);
 
-  /// Sincroniza con Gmail (obtiene nuevas suscripciones)
-  Future<List<Subscription>> syncWithGmail();
+  /// Sincroniza con Gmail para una cuenta específica.
+  /// [accessToken] usa el token guardado (sin UI). [emailHint] para logs.
+  Future<List<Subscription>> syncWithGmail({String? accessToken, String? emailHint});
 }

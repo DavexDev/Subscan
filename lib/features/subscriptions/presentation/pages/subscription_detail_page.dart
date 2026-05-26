@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:subscan/core/services/cancellation_urls.dart';
 import 'package:subscan/core/theme/design_tokens.dart';
 import 'package:subscan/features/subscriptions/models/subscription.dart';
 import 'package:subscan/features/subscriptions/presentation/pages/add_subscription_page.dart';
 import 'package:subscan/features/subscriptions/providers/subscription_notifier_provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 const Color _kBg = Color(0xFF030B3F);
 const Color _kCard = Color(0xFF3B4792);
@@ -73,6 +75,7 @@ class SubscriptionDetailPage extends ConsumerWidget {
                 ),
                 const SizedBox(height: DesignTokens.s12),
                 _CancelButton(
+                  subscription: current,
                   onDelete: () async {
                     final confirm = await showDialog<bool>(
                       context: context,
@@ -705,8 +708,95 @@ class _RenewButton extends StatelessWidget {
 }
 
 class _CancelButton extends StatelessWidget {
+  final Subscription subscription;
   final VoidCallback onDelete;
-  const _CancelButton({required this.onDelete});
+
+  const _CancelButton({required this.subscription, required this.onDelete});
+
+  void _showOptions(BuildContext context) {
+    final cancelUrl = findCancelUrl(subscription.nombre);
+
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF0D1854),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Center(
+              child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.2),
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+            ),
+            const SizedBox(height: 20),
+            Text(
+              'Cancelar "${subscription.nombre}"',
+              style: const TextStyle(
+                fontFamily: DesignTokens.fontFamily,
+                fontSize: 16,
+                fontWeight: DesignTokens.wBold,
+                color: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              '¿Qué deseas hacer?',
+              style: TextStyle(
+                fontFamily: DesignTokens.fontFamily,
+                fontSize: 13,
+                color: Colors.white.withValues(alpha: 0.55),
+              ),
+            ),
+            const SizedBox(height: 20),
+            // Opción 1: ir al sitio del proveedor
+            _OptionTile(
+              icon: Icons.open_in_new_rounded,
+              iconColor: const Color(0xFF4F6BFF),
+              title: cancelUrl != null
+                  ? 'Cancelar con ${subscription.nombre}'
+                  : 'Cancelar con el proveedor',
+              subtitle: cancelUrl != null
+                  ? 'Abre la página de cancelación oficial'
+                  : 'No tenemos el link de este servicio',
+              enabled: cancelUrl != null,
+              onTap: cancelUrl != null
+                  ? () async {
+                      Navigator.of(context).pop();
+                      await launchUrl(
+                        Uri.parse(cancelUrl),
+                        mode: LaunchMode.externalApplication,
+                      );
+                    }
+                  : null,
+            ),
+            const SizedBox(height: 12),
+            // Opción 2: solo quitar de la app
+            _OptionTile(
+              icon: Icons.delete_outline_rounded,
+              iconColor: const Color(0xFFE5223A),
+              title: 'Quitar de mis suscripciones',
+              subtitle: 'Solo se elimina de PODA, no cancela el servicio',
+              enabled: true,
+              onTap: () {
+                Navigator.of(context).pop();
+                onDelete();
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -714,7 +804,7 @@ class _CancelButton extends StatelessWidget {
       width: double.infinity,
       height: 52,
       child: ElevatedButton(
-        onPressed: onDelete,
+        onPressed: () => _showOptions(context),
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFFC50000),
           elevation: 0,
@@ -730,6 +820,93 @@ class _CancelButton extends StatelessWidget {
             fontWeight: DesignTokens.wBold,
             color: Colors.white,
             letterSpacing: 0.5,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _OptionTile extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String title;
+  final String subtitle;
+  final bool enabled;
+  final VoidCallback? onTap;
+
+  const _OptionTile({
+    required this.icon,
+    required this.iconColor,
+    required this.title,
+    required this.subtitle,
+    required this.enabled,
+    this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: enabled ? onTap : null,
+        borderRadius: BorderRadius.circular(DesignTokens.rL),
+        child: Opacity(
+          opacity: enabled ? 1.0 : 0.4,
+          child: Container(
+            padding: const EdgeInsets.all(DesignTokens.s16),
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.06),
+              borderRadius: BorderRadius.circular(DesignTokens.rL),
+              border: Border.all(
+                color: Colors.white.withValues(alpha: 0.1),
+              ),
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: iconColor.withValues(alpha: 0.15),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(icon, color: iconColor, size: 20),
+                ),
+                const SizedBox(width: DesignTokens.s12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: TextStyle(
+                          fontFamily: DesignTokens.fontFamily,
+                          fontSize: 14,
+                          fontWeight: DesignTokens.wSemibold,
+                          color: enabled ? Colors.white : Colors.white54,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        subtitle,
+                        style: TextStyle(
+                          fontFamily: DesignTokens.fontFamily,
+                          fontSize: 12,
+                          color: Colors.white.withValues(alpha: 0.5),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                if (enabled)
+                  Icon(
+                    Icons.chevron_right_rounded,
+                    color: Colors.white.withValues(alpha: 0.4),
+                    size: 18,
+                  ),
+              ],
+            ),
           ),
         ),
       ),

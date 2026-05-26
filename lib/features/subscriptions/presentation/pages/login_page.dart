@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:subscan/core/theme/design_tokens.dart';
+import 'package:subscan/core/widgets/service_logo.dart';
 import 'package:subscan/features/auth/auth_provider.dart';
 import 'package:subscan/features/subscriptions/presentation/pages/main_shell.dart';
 
@@ -288,13 +289,14 @@ class _TopSection extends StatelessWidget {
 // ─── Row de logos de servicios ────────────────────────────────────────────────
 
 class _ServiceLogosRow extends StatelessWidget {
-  // Datos de los servicios (nombre, color de marca)
   static const _services = [
-    ('N', Color(0xFFE50914)),  // Netflix
-    ('S', Color(0xFF1DB954)),  // Spotify
-    ('Y', Color(0xFFFF0000)),  // YouTube
-    ('D+', Color(0xFF0F3FA2)), // Disney+
-    ('A', Color(0xFF00A8E0)),  // Adobe / Amazon
+    'Netflix',
+    'Spotify',
+    'YouTube',
+    'Disney+',
+    'Amazon Prime',
+    'Max',
+    'Twitch',
   ];
 
   @override
@@ -302,39 +304,25 @@ class _ServiceLogosRow extends StatelessWidget {
     return Row(
       children: _services.asMap().entries.map((e) {
         final i = e.key;
-        final label = e.value.$1;
-        final color = e.value.$2;
-        // Efecto de pila con overlap negativo
+        final name = e.value;
         return Transform.translate(
-          offset: Offset(i * -8.0, 0),
+          offset: Offset(i * -10.0, 0),
           child: Container(
-            width: 42,
-            height: 42,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
-              color: color,
               shape: BoxShape.circle,
-              border: Border.all(
-                color: _kBg,
-                width: 2,
-              ),
+              border: Border.all(color: _kBg, width: 2.5),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.25),
+                  color: Colors.black.withValues(alpha: 0.3),
                   blurRadius: 6,
                   offset: const Offset(0, 2),
                 ),
               ],
             ),
-            child: Center(
-              child: Text(
-                label,
-                style: const TextStyle(
-                  fontFamily: DesignTokens.fontFamily,
-                  fontSize: 13,
-                  fontWeight: DesignTokens.wBold,
-                  color: Colors.white,
-                ),
-              ),
+            child: ClipOval(
+              child: ServiceLogo(name: name, size: 44),
             ),
           ),
         );
