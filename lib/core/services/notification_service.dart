@@ -1,0 +1,97 @@
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:timezone/data/latest_all.dart' as tzdata;
+import 'package:timezone/timezone.dart' as tz;
+import 'package:subscan/features/subscriptions/models/subscription.dart';
+import 'package:subscan/features/subscriptions/providers/notification_prefs_provider.dart';
+
+class NotificationService {
+  static final _plugin = FlutterLocalNotificationsPlugin();
+  static bool _initialized = false;
+
+  static const _channelId = 'poda_renovaciones';
+  static const _channelName = 'Renovaciones PODA';
+
+  static Future<void> init() async {
+    if (_initialized) return;
+
+    tzdata.initializeTimeZones();
+    try {
+      final localTz = await FlutterTimezone.getLocalTimezone();
+      tz.setLocalLocation(tz.getLocation(localTz));
+    } catch (_) {
+      // Fallback to UTC
+    }
+
+    const initSettings = InitializationSettings(
+      android: AndroidInitializationSettings('@mipmap/ic_launcher'),
+    );
+    await _plugin.initialize(initSettings);
+    _initialized = true;
+  }
+
+  static Future<bool> hasPermission() async {
+    final android = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    return (await android?.areNotificationsEnabled()) ?? false;
+  }
+
+  static Future<bool> requestPermission() async {
+    final android = _plugin.resolvePlatformSpecificImplementation<
+        AndroidFlutterLocalNotificationsPlugin>();
+    return (await android?.requestNotificationsPermission()) ?? false;
+  }
+
+  static Future<int> scheduleRenewalNotifications(
+    List<Subscription> subs,
+    NotificationPrefs prefs,
+  ) async {
+    await _plugin.cancelAll();
+    if (!prefs.renovaciones) return 0;
+
+    final nowTz = tz.TZDateTime.now(tz.local);
+    int id = 1000;
+    int scheduled = 0;
+
+    for (final sub in subs) {
+      final notifyDay = sub.fechaRenovacion
+          .subtract(Duration(days: prefs.diasAnticipacion));
+
+      final scheduledTime = tz.TZDateTime(
+        tz.local,
+        notifyDay.year,
+        notifyDay.month,
+        notifyDay.day,
+        9, 0, 0,
+      );
+
+      if (scheduledTime.isBefore(nowTz)) continue;
+
+      final dias = prefs.diasAnticipacion;
+      final diasStr = dias == 1 ? '1 día antes' : '$dias días antes';
+
+      await _plugin.zonedSchedule(
+        id++,
+        'Renovación: ${sub.nombre}',
+        'Se renueva en $diasStr · ${sub.precioFormateado}/mes',
+        scheduledTime,
+        const NotificationDetails(
+          android: AndroidNotificationDetails(
+            _channelId,
+            _channelName,
+            channelDescription: 'Avisos de renovación de suscripciones PODA',
+            importance: Importance.high,
+            priority: Priority.high,
+            icon: '@mipmap/ic_launcher',
+          ),
+        ),
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+      );
+      scheduled++;
+    }
+
+    return scheduled;
+  }
+
+  static Future<void> cancelAll() => _plugin.cancelAll();
+}

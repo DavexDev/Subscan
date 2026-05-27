@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:subscan/core/services/notification_service.dart';
 import 'package:subscan/core/theme/app_theme.dart';
 import 'package:subscan/features/onboarding/presentation/pages/onboarding_page.dart';
 
@@ -25,6 +26,7 @@ void main() async {
   }
 
   await Firebase.initializeApp();
+  await NotificationService.init();
 
   await Supabase.initialize(
     url: supabaseUrl,
