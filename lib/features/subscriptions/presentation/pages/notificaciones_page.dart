@@ -60,7 +60,7 @@ class _NotificacionesPageState extends ConsumerState<NotificacionesPage>
   Future<void> _reschedule() async {
     final prefs = ref.read(notificationPrefsProvider);
     final subs = ref.read(subscriptionNotifierProvider).allSubscriptions;
-    final count = await NotificationService.scheduleRenewalNotifications(subs, prefs);
+    final count = await NotificationService.scheduleAll(subs, prefs);
     if (mounted) setState(() => _scheduledCount = count);
   }
 
@@ -109,6 +109,15 @@ class _NotificacionesPageState extends ConsumerState<NotificacionesPage>
             ),
             child: Column(
               children: [
+                _ToggleRow(
+                  icon: Icons.today_rounded,
+                  iconColor: const Color(0xFF06B6D4),
+                  title: 'Recordatorio diario',
+                  subtitle: 'Aviso diario a las 12:20 PM para revisar tus suscripciones',
+                  value: prefs.recordatorioDiario,
+                  onChanged: notifier.setRecordatorioDiario,
+                ),
+                _Divider(),
                 _ToggleRow(
                   icon: Icons.event_repeat_rounded,
                   iconColor: const Color(0xFF6366F1),
@@ -161,6 +170,7 @@ class _NotificacionesPageState extends ConsumerState<NotificacionesPage>
             prefs: prefs,
             subs: ref.watch(subscriptionNotifierProvider).allSubscriptions,
             onRequestPermission: _requestPermission,
+            onTest: () => NotificationService.showTestNotification(),
           ),
         ],
       ),
@@ -176,6 +186,7 @@ class _PermissionCard extends StatelessWidget {
   final NotificationPrefs prefs;
   final List<Subscription> subs;
   final VoidCallback onRequestPermission;
+  final VoidCallback onTest;
 
   const _PermissionCard({
     required this.hasPermission,
@@ -183,7 +194,13 @@ class _PermissionCard extends StatelessWidget {
     required this.prefs,
     required this.subs,
     required this.onRequestPermission,
+    required this.onTest,
   });
+
+  String _totalLabel() {
+    final total = scheduledCount + (prefs.recordatorioDiario ? 1 : 0);
+    return '$total programadas';
+  }
 
   String _nextLabel() {
     if (!prefs.renovaciones || subs.isEmpty) return 'Sin renovaciones activas';
@@ -364,7 +381,7 @@ class _PermissionCard extends StatelessWidget {
                                 BorderRadius.circular(DesignTokens.rFull),
                           ),
                           child: Text(
-                            '$scheduledCount programadas',
+                            _totalLabel(),
                             style: TextStyle(
                               fontFamily: DesignTokens.fontFamily,
                               fontSize: 10,
@@ -389,25 +406,36 @@ class _PermissionCard extends StatelessWidget {
               ),
             ],
           ),
-          if (prefs.renovaciones && scheduledCount > 0) ...[
+          if (prefs.recordatorioDiario || (prefs.renovaciones && scheduledCount > 0)) ...[
             const SizedBox(height: DesignTokens.s16),
             Divider(color: Colors.white.withValues(alpha: 0.08), height: 1),
             const SizedBox(height: DesignTokens.s12),
-            _InfoRow(
-              icon: Icons.schedule_rounded,
-              label: 'Próxima alerta',
-              value: _nextLabel(),
-            ),
-            const SizedBox(height: DesignTokens.s8),
-            _InfoRow(
-              icon: Icons.alarm_rounded,
-              label: 'Anticipación',
-              value: prefs.diasAnticipacion == 1
-                  ? '1 día antes · 9:00 AM'
-                  : '${prefs.diasAnticipacion} días antes · 9:00 AM',
-            ),
+            if (prefs.recordatorioDiario) ...[
+              _InfoRow(
+                icon: Icons.today_rounded,
+                label: 'Recordatorio diario',
+                value: 'Todos los días · 12:20 PM',
+              ),
+              if (prefs.renovaciones && scheduledCount > 0)
+                const SizedBox(height: DesignTokens.s8),
+            ],
+            if (prefs.renovaciones && scheduledCount > 0) ...[
+              _InfoRow(
+                icon: Icons.schedule_rounded,
+                label: 'Próxima alerta',
+                value: _nextLabel(),
+              ),
+              const SizedBox(height: DesignTokens.s8),
+              _InfoRow(
+                icon: Icons.alarm_rounded,
+                label: 'Anticipación',
+                value: prefs.diasAnticipacion == 1
+                    ? '1 día antes · 12:20 PM'
+                    : '${prefs.diasAnticipacion} días antes · 12:20 PM',
+              ),
+            ],
           ],
-          if (prefs.renovaciones && scheduledCount == 0) ...[
+          if (!prefs.recordatorioDiario && prefs.renovaciones && scheduledCount == 0) ...[
             const SizedBox(height: DesignTokens.s12),
             Divider(color: Colors.white.withValues(alpha: 0.08), height: 1),
             const SizedBox(height: DesignTokens.s12),
@@ -427,6 +455,33 @@ class _PermissionCard extends StatelessWidget {
               ],
             ),
           ],
+          const SizedBox(height: DesignTokens.s16),
+          Divider(color: Colors.white.withValues(alpha: 0.08), height: 1),
+          const SizedBox(height: DesignTokens.s12),
+          SizedBox(
+            width: double.infinity,
+            height: 40,
+            child: OutlinedButton.icon(
+              onPressed: onTest,
+              icon: const Icon(Icons.send_rounded, size: 16),
+              label: const Text(
+                'Probar ahora',
+                style: TextStyle(
+                  fontFamily: DesignTokens.fontFamily,
+                  fontSize: 13,
+                  fontWeight: DesignTokens.wSemibold,
+                ),
+              ),
+              style: OutlinedButton.styleFrom(
+                foregroundColor: DesignTokens.success,
+                side: BorderSide(
+                    color: DesignTokens.success.withValues(alpha: 0.4)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(DesignTokens.rM),
+                ),
+              ),
+            ),
+          ),
         ],
       ),
     );

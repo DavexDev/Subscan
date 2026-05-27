@@ -10,6 +10,8 @@ class NotificationService {
 
   static const _channelId = 'poda_renovaciones';
   static const _channelName = 'Renovaciones PODA';
+  static const _dailyChannelId = 'poda_diario';
+  static const _kDailyId = 999;
 
   static Future<void> init() async {
     if (_initialized) return;
@@ -46,11 +48,42 @@ class NotificationService {
     return (await android?.requestNotificationsPermission()) ?? false;
   }
 
-  static Future<int> scheduleRenewalNotifications(
+  static Future<void> _scheduleDailyReminder() async {
+    final now = tz.TZDateTime.now(tz.local);
+    var scheduled = tz.TZDateTime(tz.local, now.year, now.month, now.day, 12, 20, 0);
+    // If 12:15 already passed today, first fire is tomorrow
+    if (scheduled.isBefore(now)) {
+      scheduled = scheduled.add(const Duration(days: 1));
+    }
+    await _plugin.zonedSchedule(
+      _kDailyId,
+      '¿Ya revisaste tus suscripciones?',
+      'Mantén el control de tus gastos fijos.',
+      scheduled,
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          _dailyChannelId,
+          'Recordatorio diario',
+          channelDescription: 'Recordatorio diario de PODA',
+          importance: Importance.defaultImportance,
+          priority: Priority.defaultPriority,
+          icon: '@mipmap/ic_launcher',
+        ),
+      ),
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      matchDateTimeComponents: DateTimeComponents.time,
+      uiLocalNotificationDateInterpretation:
+          UILocalNotificationDateInterpretation.absoluteTime,
+    );
+  }
+
+  static Future<int> scheduleAll(
     List<Subscription> subs,
     NotificationPrefs prefs,
   ) async {
     await _plugin.cancelAll();
+
+    if (prefs.recordatorioDiario) await _scheduleDailyReminder();
     if (!prefs.renovaciones) return 0;
 
     final nowTz = tz.TZDateTime.now(tz.local);
@@ -66,7 +99,7 @@ class NotificationService {
         notifyDay.year,
         notifyDay.month,
         notifyDay.day,
-        9, 0, 0,
+        12, 20, 0,
       );
 
       if (scheduledTime.isBefore(nowTz)) continue;
@@ -97,6 +130,30 @@ class NotificationService {
     }
 
     return scheduled;
+  }
+
+  // Keep for backward compatibility — delegates to scheduleAll
+  static Future<int> scheduleRenewalNotifications(
+    List<Subscription> subs,
+    NotificationPrefs prefs,
+  ) => scheduleAll(subs, prefs);
+
+  static Future<void> showTestNotification() async {
+    await _plugin.show(
+      0,
+      '¡Notificaciones funcionando! ✓',
+      'PODA puede enviarte recordatorios diarios.',
+      const NotificationDetails(
+        android: AndroidNotificationDetails(
+          _dailyChannelId,
+          'Recordatorio diario',
+          channelDescription: 'Recordatorio diario de PODA',
+          importance: Importance.high,
+          priority: Priority.high,
+          icon: '@mipmap/ic_launcher',
+        ),
+      ),
+    );
   }
 
   static Future<void> cancelAll() => _plugin.cancelAll();
