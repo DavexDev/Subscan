@@ -422,6 +422,91 @@ class _MenuItem {
   });
 }
 
+void _showComingSoon(BuildContext context, String title) {
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: const Color(0xFF0D1854),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+    builder: (_) => Padding(
+      padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Container(
+            width: 36,
+            height: 4,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.2),
+              borderRadius: BorderRadius.circular(2),
+            ),
+          ),
+          const SizedBox(height: 24),
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: const Color(0xFF4F6BFF).withValues(alpha: 0.15),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(
+              Icons.rocket_launch_rounded,
+              color: Color(0xFF4F6BFF),
+              size: 30,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Text(
+            title,
+            style: const TextStyle(
+              fontFamily: DesignTokens.fontFamily,
+              fontSize: 18,
+              fontWeight: DesignTokens.wBold,
+              color: Colors.white,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            'Esta función estará disponible en una próxima actualización.',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontFamily: DesignTokens.fontFamily,
+              fontSize: 14,
+              height: 1.5,
+              color: Colors.white.withValues(alpha: 0.6),
+            ),
+          ),
+          const SizedBox(height: 24),
+          SizedBox(
+            width: double.infinity,
+            height: 46,
+            child: ElevatedButton(
+              onPressed: () => Navigator.of(context).pop(),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF4F6BFF),
+                elevation: 0,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(DesignTokens.rL),
+                ),
+              ),
+              child: const Text(
+                'Entendido',
+                style: TextStyle(
+                  fontFamily: DesignTokens.fontFamily,
+                  fontSize: 15,
+                  fontWeight: DesignTokens.wSemibold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 class _MenuRow extends StatelessWidget {
   final _MenuItem item;
   final bool isLast;

@@ -209,7 +209,7 @@ class _DescargarReportesPageState
           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
           children: [
             pw.Text(
-              'Generado con PODA · piums.io',
+              'Generado con PODA',
               style: pw.TextStyle(fontSize: 7.5, color: _pdfSecondary),
             ),
             pw.Text(

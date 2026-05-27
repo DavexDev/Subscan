@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:subscan/core/theme/design_tokens.dart';
 
 const Color _kBg = Color(0xFF030B3F);
@@ -141,7 +140,7 @@ const List<_FaqItem> _faqs = [
     category: 'Privacidad',
     question: '¿Cómo puedo eliminar mis datos?',
     answer:
-        'Para eliminar todos tus datos, escríbenos a soporte@piums.io desde el correo asociado a tu cuenta. '
+        'Para eliminar todos tus datos, contáctanos desde el correo asociado a tu cuenta. '
         'Procesaremos tu solicitud en un plazo de 72 horas.',
   ),
 ];
@@ -527,26 +526,6 @@ class _EmptySearch extends StatelessWidget {
 // ─── Contact card ─────────────────────────────────────────────────────────────
 
 class _ContactCard extends StatelessWidget {
-  Future<void> _openEmail(BuildContext context) async {
-    final uri = Uri(
-      scheme: 'mailto',
-      path: 'soporte@piums.io',
-      queryParameters: {
-        'subject': 'Soporte PODA',
-      },
-    );
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri);
-    } else if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No se pudo abrir el cliente de correo.'),
-          backgroundColor: Color(0xFFEF4444),
-        ),
-      );
-    }
-  }
-
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -556,80 +535,43 @@ class _ContactCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(DesignTokens.rL),
         border: Border.all(color: Colors.white.withValues(alpha: 0.08)),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              Container(
-                width: 38,
-                height: 38,
-                decoration: BoxDecoration(
-                  color: _kAccent.withValues(alpha: 0.15),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.support_agent_rounded,
-                    color: _kAccent, size: 20),
-              ),
-              const SizedBox(width: DesignTokens.s12),
-              const Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    '¿No encontraste lo que buscabas?',
-                    style: TextStyle(
-                      fontFamily: DesignTokens.fontFamily,
-                      fontSize: 14,
-                      fontWeight: DesignTokens.wSemibold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  Text(
-                    'Nuestro equipo te responde en 24–48 h.',
-                    style: TextStyle(
-                      fontFamily: DesignTokens.fontFamily,
-                      fontSize: 12,
-                      color: Color(0xFF9CA3AF),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: DesignTokens.s16),
-          SizedBox(
-            width: double.infinity,
-            height: 44,
-            child: ElevatedButton.icon(
-              onPressed: () => _openEmail(context),
-              icon: const Icon(Icons.email_outlined, size: 18),
-              label: const Text(
-                'Contactar soporte',
-                style: TextStyle(
-                  fontFamily: DesignTokens.fontFamily,
-                  fontSize: 14,
-                  fontWeight: DesignTokens.wSemibold,
-                ),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: _kAccent,
-                foregroundColor: Colors.white,
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(DesignTokens.rL),
-                ),
-              ),
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: _kAccent.withValues(alpha: 0.15),
+              shape: BoxShape.circle,
             ),
+            child: const Icon(Icons.support_agent_rounded,
+                color: _kAccent, size: 20),
           ),
-          const SizedBox(height: DesignTokens.s10),
-          Center(
-            child: Text(
-              'soporte@piums.io',
-              style: TextStyle(
-                fontFamily: DesignTokens.fontFamily,
-                fontSize: 12,
-                color: Colors.white.withValues(alpha: 0.35),
-              ),
+          const SizedBox(width: DesignTokens.s12),
+          const Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '¿No encontraste lo que buscabas?',
+                  style: TextStyle(
+                    fontFamily: DesignTokens.fontFamily,
+                    fontSize: 14,
+                    fontWeight: DesignTokens.wSemibold,
+                    color: Colors.white,
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'Próximamente habilitaremos el canal de soporte.',
+                  style: TextStyle(
+                    fontFamily: DesignTokens.fontFamily,
+                    fontSize: 12,
+                    color: Color(0xFF9CA3AF),
+                    height: 1.4,
+                  ),
+                ),
+              ],
             ),
           ),
         ],
