@@ -67,6 +67,18 @@ class AuthService {
     return cred;
   }
 
+  /// Re-autentica con la contraseña actual y establece una nueva.
+  Future<void> changePassword(String currentPassword, String newPassword) async {
+    final user = _auth.currentUser;
+    if (user == null || user.email == null) throw Exception('No hay sesión activa');
+    final credential = EmailAuthProvider.credential(
+      email: user.email!,
+      password: currentPassword,
+    );
+    await user.reauthenticateWithCredential(credential);
+    await user.updatePassword(newPassword);
+  }
+
   /// Cierra sesión en Firebase y Google.
   Future<void> signOut() async {
     await Future.wait([_auth.signOut(), _googleSignIn.signOut()]);

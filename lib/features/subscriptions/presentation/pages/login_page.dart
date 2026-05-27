@@ -622,7 +622,7 @@ class _LoginCard extends StatelessWidget {
                     onTap: () {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
-                          content: Text('Contacta a soporte: soporte@poda.app'),
+                          content: Text('El canal de soporte estará disponible próximamente.'),
                           behavior: SnackBarBehavior.floating,
                         ),
                       );

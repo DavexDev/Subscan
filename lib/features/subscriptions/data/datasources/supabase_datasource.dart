@@ -58,6 +58,7 @@ class SupabaseSubscriptionDatasource implements SubscriptionDatasource {
       currency: row['currency'] as String? ?? 'GTQ',
       createdAt: DateTime.parse(row['created_at'] as String),
       emailCuenta: row['email_cuenta'] as String?,
+      metodoPago: row['metodo_pago'] as String?,
     );
   }
 
@@ -72,6 +73,7 @@ class SupabaseSubscriptionDatasource implements SubscriptionDatasource {
       'fuente': s.fuente,
       'currency': s.currency,
       'email_cuenta': s.emailCuenta,
+      'metodo_pago': s.metodoPago,
     };
   }
 }

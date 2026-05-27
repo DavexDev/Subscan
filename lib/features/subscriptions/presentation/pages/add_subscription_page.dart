@@ -5,7 +5,9 @@ import 'package:subscan/core/services/known_services.dart';
 import 'package:subscan/core/theme/design_tokens.dart';
 import 'package:subscan/core/widgets/service_logo.dart';
 import 'package:subscan/features/subscriptions/models/subscription.dart';
+import 'package:subscan/features/subscriptions/providers/payment_methods_provider.dart';
 import 'package:subscan/features/subscriptions/providers/subscription_notifier_provider.dart';
+import 'package:subscan/features/subscriptions/presentation/pages/metodos_pago_page.dart';
 
 /// Pantalla para agregar o editar una suscripción manual.
 ///
@@ -33,7 +35,7 @@ class _AddSubscriptionPageState extends ConsumerState<AddSubscriptionPage> {
   late final TextEditingController _notasCtrl;
   late DateTime _fechaRenovacion;
   late String _selectedCategory;
-  late String _selectedPaymentMethod;
+  String? _selectedPaymentMethod;
   late bool _repeatMonthly;
 
   bool _saving = false;
@@ -100,7 +102,7 @@ class _AddSubscriptionPageState extends ConsumerState<AddSubscriptionPage> {
             ? autoCategory
             : _categories[0];
     _selectedCurrency = s?.currency ?? 'GTQ';
-    _selectedPaymentMethod = _paymentMethods[0];
+    _selectedPaymentMethod = s?.metodoPago;
     _repeatMonthly = true;
   }
 
@@ -182,6 +184,8 @@ class _AddSubscriptionPageState extends ConsumerState<AddSubscriptionPage> {
       fuente: widget.subscription?.fuente ?? 'manual',
       currency: _selectedCurrency,
       createdAt: widget.subscription?.createdAt ?? DateTime.now(),
+      emailCuenta: widget.subscription?.emailCuenta,
+      metodoPago: _selectedPaymentMethod,
     );
 
     try {
@@ -545,33 +549,84 @@ class _AddSubscriptionPageState extends ConsumerState<AddSubscriptionPage> {
 
             // ── Sección: Método de pago ──────────────────────────────────
             _SectionLabel('Método de pago'),
-            _FormCard(
-              child: _FieldRow(
-                icon: Icons.credit_card_rounded,
-                child: DropdownButtonFormField<String>(
-                  // ignore: deprecated_member_use
-                  value: _selectedPaymentMethod,
-                  items: _paymentMethods
-                      .map((method) => DropdownMenuItem(
-                            value: method,
-                            child: Text(method),
-                          ))
-                      .toList(),
-                  onChanged: (value) {
-                    if (value != null) {
-                      setState(() => _selectedPaymentMethod = value);
-                    }
-                  },
-                  style: const TextStyle(
-                    fontFamily: DesignTokens.fontFamily,
-                    fontSize: 15,
-                    color: DesignTokens.textPrimary,
-                  ),
-                  decoration:
-                      _inputDecoration('Método de pago', hint: 'Selecciona el método'),
+            Builder(builder: (ctx) {
+              final savedMethods = ref.watch(paymentMethodsProvider);
+              final displayItems = savedMethods.isNotEmpty
+                  ? savedMethods.map((m) => m.displayName).toList()
+                  : _paymentMethods;
+              // Ensure editing value still appears even if not in current list
+              final allValues = [
+                ...displayItems,
+                if (_selectedPaymentMethod != null &&
+                    !displayItems.contains(_selectedPaymentMethod))
+                  _selectedPaymentMethod!,
+              ];
+              return _FormCard(
+                child: Column(
+                  children: [
+                    _FieldRow(
+                      icon: Icons.credit_card_rounded,
+                      child: DropdownButtonFormField<String?>(
+                        value: _selectedPaymentMethod,
+                        items: [
+                          DropdownMenuItem<String?>(
+                            value: null,
+                            child: Text(
+                              'Sin especificar',
+                              style: TextStyle(
+                                fontFamily: DesignTokens.fontFamily,
+                                color: DesignTokens.textDisabled,
+                              ),
+                            ),
+                          ),
+                          ...allValues.map((item) => DropdownMenuItem<String?>(
+                                value: item,
+                                child: Text(item),
+                              )),
+                        ],
+                        onChanged: (value) =>
+                            setState(() => _selectedPaymentMethod = value),
+                        style: const TextStyle(
+                          fontFamily: DesignTokens.fontFamily,
+                          fontSize: 15,
+                          color: DesignTokens.textPrimary,
+                        ),
+                        decoration: _inputDecoration('Método de pago',
+                            hint: 'Selecciona el método'),
+                      ),
+                    ),
+                    if (savedMethods.isEmpty)
+                      InkWell(
+                        onTap: () => Navigator.of(ctx).push(
+                          MaterialPageRoute(
+                            builder: (_) => const MetodosPagoPage(),
+                          ),
+                        ),
+                        child: Padding(
+                          padding: const EdgeInsets.fromLTRB(
+                              DesignTokens.s16, 0, DesignTokens.s16, DesignTokens.s12),
+                          child: Row(
+                            children: [
+                              const SizedBox(width: 30),
+                              const Icon(Icons.add_card_rounded,
+                                  size: 14, color: DesignTokens.primary),
+                              const SizedBox(width: DesignTokens.s6),
+                              Text(
+                                'Administrar métodos de pago',
+                                style: TextStyle(
+                                  fontFamily: DesignTokens.fontFamily,
+                                  fontSize: 12,
+                                  color: DesignTokens.primary,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
-              ),
-            ),
+              );
+            }),
             const SizedBox(height: DesignTokens.s20),
 
             // ── Sección: Notas (Opcional) ────────────────────────────────────────────
