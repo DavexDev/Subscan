@@ -7,6 +7,11 @@ import 'package:subscan/features/auth/providers/linked_accounts_provider.dart';
 import 'package:subscan/features/subscriptions/providers/subscription_notifier_provider.dart';
 import 'package:subscan/features/tutorial/tutorial_provider.dart';
 import 'informacion_personal_page.dart';
+import 'metodos_pago_page.dart';
+import 'notificaciones_page.dart';
+import 'seguridad_page.dart';
+import 'descargar_reportes_page.dart';
+import 'centro_ayuda_page.dart';
 import 'acerca_de_page.dart';
 import 'login_page.dart';
 
@@ -346,28 +351,24 @@ class _SettingsMenu extends StatelessWidget {
       title: 'Métodos de pago',
       subtitle: 'Administra tus tarjetas y métodos',
       action: _MenuAction.metodosPago,
-      comingSoon: true,
     ),
     _MenuItem(
       icon: Icons.notifications_none_rounded,
       title: 'Notificaciones',
       subtitle: 'Configura tus preferencias',
       action: _MenuAction.notificaciones,
-      comingSoon: true,
     ),
     _MenuItem(
       icon: Icons.lock_outline_rounded,
       title: 'Seguridad',
       subtitle: 'Contraseña, 2FA y sesiones',
       action: _MenuAction.seguridad,
-      comingSoon: true,
     ),
     _MenuItem(
       icon: Icons.download_rounded,
       title: 'Descargar reportes',
       subtitle: 'Exporta tus reportes de gastos',
       action: _MenuAction.descargarReportes,
-      comingSoon: true,
     ),
     _MenuItem(
       icon: Icons.play_circle_outline_rounded,
@@ -380,7 +381,6 @@ class _SettingsMenu extends StatelessWidget {
       title: 'Centro de ayuda',
       subtitle: 'Preguntas frecuentes y soporte',
       action: _MenuAction.ayuda,
-      comingSoon: true,
     ),
     _MenuItem(
       icon: Icons.info_outline_rounded,
@@ -413,100 +413,13 @@ class _MenuItem {
   final String title;
   final String subtitle;
   final _MenuAction action;
-  final bool comingSoon;
 
   const _MenuItem({
     required this.icon,
     required this.title,
     required this.subtitle,
     required this.action,
-    this.comingSoon = false,
   });
-}
-
-void _showComingSoon(BuildContext context, String title) {
-  showModalBottomSheet(
-    context: context,
-    backgroundColor: const Color(0xFF0D1854),
-    shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-    ),
-    builder: (_) => Padding(
-      padding: const EdgeInsets.fromLTRB(24, 16, 24, 40),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            width: 36,
-            height: 4,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(2),
-            ),
-          ),
-          const SizedBox(height: 24),
-          Container(
-            width: 64,
-            height: 64,
-            decoration: BoxDecoration(
-              color: const Color(0xFF4F6BFF).withValues(alpha: 0.15),
-              shape: BoxShape.circle,
-            ),
-            child: const Icon(
-              Icons.rocket_launch_rounded,
-              color: Color(0xFF4F6BFF),
-              size: 30,
-            ),
-          ),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            style: const TextStyle(
-              fontFamily: DesignTokens.fontFamily,
-              fontSize: 18,
-              fontWeight: DesignTokens.wBold,
-              color: Colors.white,
-            ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Esta función estará disponible en una próxima actualización.',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontFamily: DesignTokens.fontFamily,
-              fontSize: 14,
-              height: 1.5,
-              color: Colors.white.withValues(alpha: 0.6),
-            ),
-          ),
-          const SizedBox(height: 24),
-          SizedBox(
-            width: double.infinity,
-            height: 46,
-            child: ElevatedButton(
-              onPressed: () => Navigator.of(context).pop(),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4F6BFF),
-                elevation: 0,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(DesignTokens.rL),
-                ),
-              ),
-              child: const Text(
-                'Entendido',
-                style: TextStyle(
-                  fontFamily: DesignTokens.fontFamily,
-                  fontSize: 15,
-                  fontWeight: DesignTokens.wSemibold,
-                  color: Colors.white,
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    ),
-  );
 }
 
 class _MenuRow extends StatelessWidget {
@@ -516,14 +429,30 @@ class _MenuRow extends StatelessWidget {
   const _MenuRow({required this.item, required this.isLast});
 
   void _handleTap(BuildContext context) {
-    if (item.comingSoon) {
-      _showComingSoon(context, item.title);
-      return;
-    }
     switch (item.action) {
       case _MenuAction.informacionPersonal:
         Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const InformacionPersonalPage()),
+        );
+      case _MenuAction.metodosPago:
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const MetodosPagoPage()),
+        );
+      case _MenuAction.notificaciones:
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const NotificacionesPage()),
+        );
+      case _MenuAction.seguridad:
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const SeguridadPage()),
+        );
+      case _MenuAction.descargarReportes:
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const DescargarReportesPage()),
+        );
+      case _MenuAction.ayuda:
+        Navigator.of(context).push(
+          MaterialPageRoute(builder: (_) => const CentroAyudaPage()),
         );
       case _MenuAction.tutorial:
         ProviderScope.containerOf(context)
@@ -533,8 +462,6 @@ class _MenuRow extends StatelessWidget {
         Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const AcercaDePage()),
         );
-      default:
-        break;
     }
   }
 
@@ -584,24 +511,6 @@ class _MenuRow extends StatelessWidget {
                     ],
                   ),
                 ),
-                if (item.comingSoon)
-                  Container(
-                    margin: const EdgeInsets.only(right: 6),
-                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF4F6BFF).withValues(alpha: 0.18),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: const Text(
-                      'Pronto',
-                      style: TextStyle(
-                        fontFamily: DesignTokens.fontFamily,
-                        fontSize: 10,
-                        fontWeight: DesignTokens.wSemibold,
-                        color: Color(0xFF7B9FFF),
-                      ),
-                    ),
-                  ),
                 Icon(
                   Icons.chevron_right_rounded,
                   color: Colors.white.withValues(alpha: 0.5),

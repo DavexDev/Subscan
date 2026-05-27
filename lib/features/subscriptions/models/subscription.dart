@@ -9,6 +9,7 @@ class Subscription {
   final String currency; // 'GTQ', 'USD', 'EUR', 'MXN', 'GBP'
   final DateTime createdAt;
   final String? emailCuenta; // cuenta Gmail que originó esta suscripción
+  final String? metodoPago;
 
   Subscription({
     required this.id,
@@ -20,6 +21,7 @@ class Subscription {
     this.currency = 'GTQ',
     DateTime? createdAt,
     this.emailCuenta,
+    this.metodoPago,
   }) : createdAt = createdAt ?? DateTime.now();
 
   String get currencySymbol {
@@ -60,6 +62,7 @@ class Subscription {
     String? currency,
     DateTime? createdAt,
     String? emailCuenta,
+    String? metodoPago,
   }) {
     return Subscription(
       id: id ?? this.id,
@@ -71,6 +74,7 @@ class Subscription {
       currency: currency ?? this.currency,
       createdAt: createdAt ?? this.createdAt,
       emailCuenta: emailCuenta ?? this.emailCuenta,
+      metodoPago: metodoPago ?? this.metodoPago,
     );
   }
 

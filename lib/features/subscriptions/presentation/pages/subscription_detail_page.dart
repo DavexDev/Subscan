@@ -337,9 +337,11 @@ class _InfoColumnsCard extends StatelessWidget {
               child: _InfoColumn(
                 icon: Icons.credit_card_rounded,
                 topLabel: 'Método de pago',
-                mainValue: 'Visa *****4521',
-                mainColor: Colors.white,
-                bottomLabel: 'Sin método alternativo',
+                mainValue: subscription.metodoPago ?? 'No especificado',
+                mainColor: subscription.metodoPago != null
+                    ? Colors.white
+                    : Colors.white38,
+                bottomLabel: subscription.metodoPago != null ? 'Vinculado' : 'Sin vincular',
               ),
             ),
             _VDiv(),

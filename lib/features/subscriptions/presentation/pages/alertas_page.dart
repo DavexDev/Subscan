@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:subscan/core/theme/design_tokens.dart';
 import 'package:subscan/features/subscriptions/models/subscription.dart';
 import 'package:subscan/features/subscriptions/presentation/notifiers/subscription_notifier.dart';
+import 'package:subscan/features/subscriptions/providers/notification_prefs_provider.dart';
 import 'package:subscan/features/subscriptions/providers/subscription_notifier_provider.dart';
 
 const Color _kBg = Color(0xFF030B3F);
@@ -99,25 +100,27 @@ _AlertItem _toPriceAlert(Subscription s) {
   );
 }
 
-List<_AlertGroup> _buildGroups(SubscriptionState state) {
+List<_AlertGroup> _buildGroups(SubscriptionState state, NotificationPrefs prefs) {
   final groups = <_AlertGroup>[];
 
-  // Próximos pagos: urgentes (≤3 días) + próximas (4–7 días)
-  final pagos = [
-    ...state.urgentes.map(_toPaymentAlert),
-    ...state.proximas.map(_toPaymentAlert),
-  ];
-  if (pagos.isNotEmpty) {
-    groups.add(_AlertGroup(dateHeader: 'Próximos pagos', items: pagos));
+  if (prefs.renovaciones) {
+    final pagos = state.allSubscriptions
+        .where((s) => s.diasRestantes >= 0 && s.diasRestantes <= prefs.diasAnticipacion)
+        .map(_toPaymentAlert)
+        .toList();
+    if (pagos.isNotEmpty) {
+      groups.add(_AlertGroup(dateHeader: 'Próximos pagos', items: pagos));
+    }
   }
 
-  // Aumentos de precio: precioOriginal != null && precioOriginal > precioActual
-  final aumentos = state.allSubscriptions
-      .where((s) => s.precioOriginal != null && s.precioOriginal! > s.precioActual)
-      .map(_toPriceAlert)
-      .toList();
-  if (aumentos.isNotEmpty) {
-    groups.add(_AlertGroup(dateHeader: 'Aumentos de precio', items: aumentos));
+  if (prefs.alertasPrecio) {
+    final aumentos = state.allSubscriptions
+        .where((s) => s.precioOriginal != null && s.precioOriginal! > s.precioActual)
+        .map(_toPriceAlert)
+        .toList();
+    if (aumentos.isNotEmpty) {
+      groups.add(_AlertGroup(dateHeader: 'Aumentos de precio', items: aumentos));
+    }
   }
 
   return groups;
@@ -158,7 +161,8 @@ class _AlertasPageState extends ConsumerState<AlertasPage> {
   @override
   Widget build(BuildContext context) {
     final state = ref.watch(subscriptionNotifierProvider);
-    final allGroups = _buildGroups(state);
+    final prefs = ref.watch(notificationPrefsProvider);
+    final allGroups = _buildGroups(state, prefs);
     final filteredGroups = _applyFilter(allGroups);
 
     final totalAlertas =
