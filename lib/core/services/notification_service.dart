@@ -1,5 +1,4 @@
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest_all.dart' as tzdata;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:subscan/features/subscriptions/models/subscription.dart';
@@ -17,10 +16,15 @@ class NotificationService {
 
     tzdata.initializeTimeZones();
     try {
-      final localTz = await FlutterTimezone.getLocalTimezone();
-      tz.setLocalLocation(tz.getLocation(localTz));
+      // Derive IANA timezone from system UTC offset (Etc/GMT uses inverted sign)
+      final offsetHours = DateTime.now().timeZoneOffset.inHours;
+      final tzName = offsetHours == 0
+          ? 'UTC'
+          : 'Etc/GMT${(-offsetHours) > 0 ? '+' : ''}${-offsetHours}';
+      tz.setLocalLocation(tz.getLocation(tzName));
     } catch (_) {
       // Fallback to UTC
+      tz.setLocalLocation(tz.getLocation('UTC'));
     }
 
     const initSettings = InitializationSettings(
@@ -86,6 +90,8 @@ class NotificationService {
           ),
         ),
         androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        uiLocalNotificationDateInterpretation:
+            UILocalNotificationDateInterpretation.absoluteTime,
       );
       scheduled++;
     }

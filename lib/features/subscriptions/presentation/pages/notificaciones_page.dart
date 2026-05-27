@@ -70,10 +70,10 @@ class _NotificacionesPageState extends ConsumerState<NotificacionesPage>
     final notifier = ref.read(notificationPrefsProvider.notifier);
 
     // Reschedule when prefs or subscriptions change
-    ref.listen(notificationPrefsProvider, (_, __) {
+    ref.listen(notificationPrefsProvider, (prev, next) {
       if (_hasPermission == true) _reschedule();
     });
-    ref.listen(subscriptionNotifierProvider, (_, __) {
+    ref.listen(subscriptionNotifierProvider, (prev, next) {
       if (_hasPermission == true) _reschedule();
     });
 
