@@ -51,7 +51,7 @@ class NotificationService {
   static Future<void> _scheduleDailyReminder() async {
     final now = tz.TZDateTime.now(tz.local);
     var scheduled = tz.TZDateTime(tz.local, now.year, now.month, now.day, 12, 20, 0);
-    // If 12:15 already passed today, first fire is tomorrow
+    // If 12:20 already passed today, first fire is tomorrow
     if (scheduled.isBefore(now)) {
       scheduled = scheduled.add(const Duration(days: 1));
     }
