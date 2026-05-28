@@ -81,6 +81,7 @@ class NotificationService {
     List<Subscription> subs,
     NotificationPrefs prefs,
   ) async {
+    if (!_initialized) await init();
     await _plugin.cancelAll();
 
     if (prefs.recordatorioDiario) await _scheduleDailyReminder();
@@ -139,6 +140,7 @@ class NotificationService {
   ) => scheduleAll(subs, prefs);
 
   static Future<void> showTestNotification() async {
+    if (!_initialized) await init();
     await _plugin.show(
       0,
       '¡Notificaciones funcionando! ✓',

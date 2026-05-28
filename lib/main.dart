@@ -25,15 +25,16 @@ void main() async {
     );
   }
 
-  await Firebase.initializeApp();
-  await NotificationService.init();
-
-  await Supabase.initialize(
-    url: supabaseUrl,
-    anonKey: supabaseAnonKey,
-  );
+  // Parallelize Firebase + Supabase to reduce sequential blocking on startup
+  await Future.wait([
+    Firebase.initializeApp(),
+    Supabase.initialize(url: supabaseUrl, anonKey: supabaseAnonKey),
+  ]);
 
   runApp(const ProviderScope(child: PodaApp()));
+
+  // Defer heavy timezone DB load to after first frame (avoids 100+ skipped frames)
+  WidgetsBinding.instance.addPostFrameCallback((_) => NotificationService.init());
 }
 
 class PodaApp extends StatelessWidget {
