@@ -134,6 +134,11 @@ class _MainShellState extends ConsumerState<MainShell> {
       }
     });
 
+    // Navigation triggered from any child widget (e.g. avatar → cuenta)
+    ref.listen<int>(selectedTabProvider, (_, next) {
+      if (next != _currentIndex) setState(() => _currentIndex = next);
+    });
+
     return Scaffold(
       body: Stack(
         children: [
@@ -163,7 +168,10 @@ class _MainShellState extends ConsumerState<MainShell> {
       bottomNavigationBar: _BottomNav(
         currentIndex: _currentIndex,
         onTap: tutStep == null
-            ? (i) => setState(() => _currentIndex = i)
+            ? (i) {
+                ref.read(selectedTabProvider.notifier).state = i;
+                setState(() => _currentIndex = i);
+              }
             : (_) {},
       ),
     );
