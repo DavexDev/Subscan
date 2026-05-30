@@ -49,9 +49,14 @@ class GmailDatasource implements SubscriptionDatasource {
       } catch (e) {
         client._client.close();
         final msg = e.toString();
-        if (msg.contains('401') || msg.contains('invalid authentication') ||
-            msg.contains('unauthorized') || msg.contains('credentials')) {
-          debugPrint('[Gmail] Token expirado para $emailHint — refrescando con sign-in silencioso');
+        if (msg.contains('401') ||
+            msg.contains('403') ||
+            msg.contains('NEED_REMOTE_CONSENT') ||
+            msg.contains('invalid_grant') ||
+            msg.contains('invalid authentication') ||
+            msg.contains('unauthorized') ||
+            msg.contains('credentials')) {
+          debugPrint('[Gmail] Token inválido/expirado para $emailHint — refrescando con sign-in silencioso');
           // Continúa al flujo de refresh abajo
         } else {
           rethrow;
@@ -59,9 +64,13 @@ class GmailDatasource implements SubscriptionDatasource {
       }
     }
 
-    // 2. Refresh silencioso (sin UI) usando loginHint para la cuenta correcta
+    // 2. Refresh silencioso — reintenta con delay antes de ir a sign-in interactivo
     final googleSignIn = GoogleSignIn(scopes: _scopes);
-    final account = await googleSignIn.signInSilently() ?? await googleSignIn.signIn();
+    GoogleSignInAccount? account = await googleSignIn.signInSilently();
+    if (account == null) {
+      await Future.delayed(const Duration(seconds: 1));
+      account = await googleSignIn.signInSilently() ?? await googleSignIn.signIn();
+    }
     if (account == null) throw Exception('Gmail no autenticado');
     final headers = await account.authHeaders;
     final client = _GoogleAuthClient(headers);
