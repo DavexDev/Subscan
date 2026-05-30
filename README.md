@@ -46,8 +46,9 @@
 | Dave | `dave` | Backend core: estructuras de datos, domain layer, arquitectura |
 | Brandon | `brandonnn` | Frontend: UI pages, widgets, animaciones, Riverpod state |
 | Jeferson | `Jeferson` | Integracion Gmail API, GmailDatasource, parseo de correos |
+| Pablo | — | Diseño UI/UX en Figma: design system, mockups, prototipo |
 
-> Modalidad grupal — 3 integrantes.
+> Modalidad grupal — 4 integrantes.
 
 ---
 
@@ -500,7 +501,8 @@ La pantalla **Analytics** (`lib/features/subscriptions/presentation/pages/analyt
 main (rama protegida — solo via Pull Request)
  ├── dave          → Backend core: estructuras de datos, domain layer
  ├── brandonnn     → Frontend: UI, widgets, animaciones, state
- └── Jeferson      → Integracion Gmail API
+ ├── Jeferson      → Integracion Gmail API
+ └── (Pablo)       → Diseño UI/UX en Figma (externo al repo)
 ```
 
 ### Convencion de commits
