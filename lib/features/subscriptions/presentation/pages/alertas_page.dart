@@ -5,6 +5,7 @@ import 'package:subscan/features/subscriptions/models/subscription.dart';
 import 'package:subscan/features/subscriptions/presentation/notifiers/subscription_notifier.dart';
 import 'package:subscan/features/subscriptions/providers/notification_prefs_provider.dart';
 import 'package:subscan/features/subscriptions/providers/subscription_notifier_provider.dart';
+import 'package:subscan/core/widgets/service_logo.dart';
 
 const Color _kBg = Color(0xFF030B3F);
 const Color _kCard = Color(0xFF3B4792);
@@ -483,25 +484,7 @@ class _AlertRow extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Icono de app
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: item.iconColor,
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: Text(
-                    item.app.isEmpty ? '?' : item.app[0].toUpperCase(),
-                    style: const TextStyle(
-                      fontFamily: DesignTokens.fontFamily,
-                      color: Colors.white,
-                      fontWeight: DesignTokens.wBold,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              ),
+              ServiceLogo(name: item.app, size: 40),
               const SizedBox(width: DesignTokens.s12),
               // Contenido
               Expanded(

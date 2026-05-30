@@ -9,6 +9,7 @@ import 'package:subscan/features/subscriptions/presentation/pages/add_subscripti
 import 'package:subscan/features/subscriptions/presentation/pages/gmail_sync_overlay_page.dart';
 import 'package:subscan/features/subscriptions/presentation/pages/subscription_detail_page.dart';
 import 'package:subscan/features/subscriptions/providers/subscription_notifier_provider.dart';
+import 'package:subscan/features/tutorial/tutorial_provider.dart';
 
 const Color _kBg = Color(0xFF030B3F);
 const Color _kCard = Color(0xFF0D1854);
@@ -178,8 +179,6 @@ class _Header extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        const Icon(Icons.menu_rounded, color: Colors.white, size: 26),
-        const SizedBox(width: DesignTokens.s12),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -223,32 +222,36 @@ class _Header extends StatelessWidget {
   }
 }
 
-class _Avatar extends StatelessWidget {
+class _Avatar extends ConsumerWidget {
   final String? photoUrl;
   final String name;
   const _Avatar({required this.photoUrl, required this.name});
 
   @override
-  Widget build(BuildContext context) {
-    if (photoUrl != null && photoUrl!.isNotEmpty) {
-      return CircleAvatar(
-        radius: 22,
-        backgroundImage: NetworkImage(photoUrl!),
-        backgroundColor: DesignTokens.primary,
-      );
-    }
-    return CircleAvatar(
-      radius: 22,
-      backgroundColor: DesignTokens.primary,
-      child: Text(
-        name.isNotEmpty ? name[0].toUpperCase() : 'U',
-        style: const TextStyle(
-          fontFamily: DesignTokens.fontFamily,
-          fontSize: 18,
-          fontWeight: DesignTokens.wBold,
-          color: Colors.white,
-        ),
-      ),
+  Widget build(BuildContext context, WidgetRef ref) {
+    final avatar = photoUrl != null && photoUrl!.isNotEmpty
+        ? CircleAvatar(
+            radius: 22,
+            backgroundImage: NetworkImage(photoUrl!),
+            backgroundColor: DesignTokens.primary,
+          )
+        : CircleAvatar(
+            radius: 22,
+            backgroundColor: DesignTokens.primary,
+            child: Text(
+              name.isNotEmpty ? name[0].toUpperCase() : 'U',
+              style: const TextStyle(
+                fontFamily: DesignTokens.fontFamily,
+                fontSize: 18,
+                fontWeight: DesignTokens.wBold,
+                color: Colors.white,
+              ),
+            ),
+          );
+
+    return GestureDetector(
+      onTap: () => ref.read(selectedTabProvider.notifier).state = 4,
+      child: avatar,
     );
   }
 }
