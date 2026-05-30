@@ -778,16 +778,18 @@ class _PopularServiceCard extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           ServiceLogo(name: name, size: 40),
-          Text(
-            name,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontFamily: DesignTokens.fontFamily,
-              fontSize: 10,
-              color: Colors.white,
-              fontWeight: DesignTokens.wMedium,
+          Flexible(
+            child: Text(
+              name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                fontFamily: DesignTokens.fontFamily,
+                fontSize: 10,
+                color: Colors.white,
+                fontWeight: DesignTokens.wMedium,
+              ),
             ),
           ),
           GestureDetector(
